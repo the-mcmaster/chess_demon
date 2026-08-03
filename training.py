@@ -18,8 +18,10 @@ One epoch:
 """
 
 import random
+import os
 
 import chess
+import chess.pgn
 import torch
 import torch.nn.functional as F
 
@@ -53,16 +55,35 @@ KNIGHT_OFFSETS = [
 UNDERPROMOTION_PIECES = [chess.KNIGHT, chess.BISHOP, chess.ROOK]
 
 
+def _canonical_rc(square: chess.Square, mover: bool):
+    """Row/col of a square in the mover-relative frame that model.py's
+    board_to_tensor uses (rank flipped whenever black is to move, file
+    unchanged)."""
+    row = chess.square_rank(square)
+    col = chess.square_file(square)
+    if mover == chess.BLACK:
+        row = 7 - row
+    return row, col
+
+
 def move_to_plane_index(move: chess.Move, board: chess.Board) -> int:
-    """Map a legal chess.Move to its plane index (0-72) in the policy tensor."""
-    from_sq = move.from_square
-    to_sq = move.to_square
-    dr = chess.square_rank(to_sq) - chess.square_rank(from_sq)
-    dc = chess.square_file(to_sq) - chess.square_file(from_sq)
+    """
+    Map a legal chess.Move to its plane index (0-72) in the policy tensor.
+
+    The policy tensor is produced from the mover-relative board encoding
+    (see model.py), so the move's from/to squares are first converted into
+    that same canonical frame before computing direction/distance - the
+    board's real, un-flipped coordinates are only used for pushing the
+    move onto the board itself.
+    """
+    mover = board.turn
+    from_row, from_col = _canonical_rc(move.from_square, mover)
+    to_row, to_col = _canonical_rc(move.to_square, mover)
+    dr = to_row - from_row
+    dc = to_col - from_col
 
     if move.promotion is not None and move.promotion != chess.QUEEN:
-        piece = board.piece_at(from_sq)
-        # dc is -1/0/1 for a pawn's capture-left / push / capture-right
+        # dc is -1/0/1 for the mover's capture-left / push / capture-right
         dir_idx = dc + 1
         piece_idx = UNDERPROMOTION_PIECES.index(move.promotion)
         return 64 + dir_idx * 3 + piece_idx
@@ -96,11 +117,11 @@ def select_move_from_output(
     temperature -> 0 behaves like argmax (always the highest-valued move).
     """
     legal_moves = list(board.legal_moves)
+    mover = board.turn
 
     move_values = []
     for move in legal_moves:
-        from_row = chess.square_rank(move.from_square)
-        from_col = chess.square_file(move.from_square)
+        from_row, from_col = _canonical_rc(move.from_square, mover)
         plane_idx = move_to_plane_index(move, board)
         move_values.append(policy_logits[from_row, from_col, plane_idx])
 
@@ -120,6 +141,7 @@ def play_game(
     model_black: ChessTransformer,
     device: str = "cpu",
     temperature: float = 1.0,
+    **kwargs
 ):
     """
     Play one full self-play game.
@@ -129,40 +151,54 @@ def play_game(
         outcome: dict mapping chess.WHITE / chess.BLACK -> result in {0.0, 1.0}
                     - 0.0 for both sides if the game results in a draw
     """
-    board = chess.Board()
-    history = []
+    attempt = 0
+    while True:
+        attempt += 1
+        board = chess.Board()
+        history = []
 
-    full_move_count = 0
-    while not board.is_game_over(claim_draw=True) and full_move_count < MAX_FULL_MOVES:
-        input_tensor = board_to_tensor(board).unsqueeze(0).to(device)
+        full_move_count = 0
+        while not board.is_game_over(claim_draw=True) and full_move_count < MAX_FULL_MOVES:
+            input_tensor = board_to_tensor(board).unsqueeze(0).to(device)
 
-        model = model_white if board.turn == chess.WHITE else model_black
-        with torch.no_grad():
-            policy_logits, _value = model(input_tensor)
+            model = model_white if board.turn == chess.WHITE else model_black
+            with torch.no_grad():
+                policy_logits, _value = model(input_tensor)
 
-        move = select_move_from_output(policy_logits[0], board, temperature=temperature)
+            move = select_move_from_output(policy_logits[0], board, temperature=temperature)
 
-        history.append((input_tensor.squeeze(0).cpu(), board.turn))
-        board.push(move)
+            history.append((input_tensor.squeeze(0).cpu(), board.turn))
+            board.push(move)
 
-        if board.turn == chess.WHITE:
-            # a full move just completed (black just moved)
-            full_move_count += 1
+            if board.turn == chess.WHITE:
+                # a full move just completed (black just moved)
+                full_move_count += 1
 
-    dead = False
-    if board.is_game_over(claim_draw=True):
-        result = board.result(claim_draw=True)
-    else:
-        # hit the 200-full-move cap without a natural conclusion
-        dead = True
-        result = "1/2-1/2"
+        game = chess.pgn.Game.from_board(board)
+
+        game.headers["Event"] = f"Epoch {epoch} Game {kwargs["Count"]} Attempt {attempt}"
+        game.headers["White"] = kwargs["White"]
+        game.headers["Black"] = kwargs["Black"]
+        game.headers["Result"] = board.result()
+
+        os.makedirs(f"{kwargs["Epoch"]}", exist_ok=True)
+        with open(f"{kwargs["Epoch"]}/epoch{kwargs["Epoch"]}game{kwargs["Count"]}attempt{attempt}.pgn", "w", encoding="utf-8") as pgn_file:
+            pgn_file.write(str(game))
+
+        if board.is_game_over(claim_draw=True):
+            result = board.result(claim_draw=True)
+        else:
+            # hit the 200-full-move cap without a natural conclusion
+            continue
+
+        break
 
     if result == "1-0":
-        outcome = {chess.WHITE: 1.0, chess.BLACK: 0.0, "dead": False}
+        outcome = {chess.WHITE: 1.0, chess.BLACK: 0.0}
     elif result == "0-1":
-        outcome = {chess.WHITE: 0.0, chess.BLACK: 1.0, "dead": False}
+        outcome = {chess.WHITE: 0.0, chess.BLACK: 1.0}
     else:
-        outcome = {chess.WHITE: 0.0, chess.BLACK: 0.0, "dead": dead}
+        outcome = {chess.WHITE: 0.5, chess.BLACK: 0.5}
 
     return history, outcome
 
@@ -171,6 +207,7 @@ def play_epoch(
     model_white: ChessTransformer,
     model_black: ChessTransformer,
     optimizer: torch.optim.Optimizer,
+    epoch: int,
     device: str = "cpu",
     games_per_epoch: int = 1024,
     train_batch_size: int = 256,
@@ -184,23 +221,15 @@ def play_epoch(
     # isn't hashable and can't be used as a dict key directly
     all_position_results = {chess.WHITE: {}, chess.BLACK: {}}
 
-    dead_games, ties, white_won, black_won = (0, 0, 0, 0)
-
+    summary = {'white': 0, 'black': 0, 'draw': 0}
     for game_idx in range(games_per_epoch):
-        history, outcome = play_game(model_white, model_black, device=device, temperature=temperature)
-        
-        if outcome["dead"]: dead_games += 1
-        elif outcome[chess.WHITE] == 1: white_won += 1
-        elif outcome[chess.BLACK] == 1: black_won += 1
-        else: ties += 1
-
+        history, outcome = play_game(model_white, model_black, device=device, temperature=temperature, Epoch=epoch, White=f"Generation {model_white.epoch}", Black=f"Generation {model_black.epoch}", Count=game_idx + 1)
         for position_tensor, mover_color in history:
             key = position_tensor.numpy().tobytes()
             entry = all_position_results[mover_color].setdefault(
                 key, {"tensor": position_tensor, "results": []}
             )
             entry["results"].append(outcome[mover_color])
-        if game_idx % 32 == 31: print(f"\tPlayed {game_idx + 1} games")
 
     average_loss_white_model = eval_positions(
         model_white, all_position_results[chess.WHITE], device=device, train_batch_size=train_batch_size
@@ -209,7 +238,7 @@ def play_epoch(
         model_black, all_position_results[chess.BLACK], device=device, train_batch_size=train_batch_size
     )
 
-    return (average_loss_white_model, average_loss_black_model, {"ties": ties, "black_won": black_won, "white_won": white_won, "dead": dead_games})
+    return (average_loss_white_model, average_loss_black_model)
 
 
 def eval_positions(model, position_entries, device: str = "cpu", train_batch_size: int = 256):
@@ -243,25 +272,20 @@ def eval_positions(model, position_entries, device: str = "cpu", train_batch_siz
 
         total_loss += loss.item()
         num_batches += 1
-    
+
     return total_loss / max(num_batches, 1)
 
 
 if __name__ == "__main__":
     device = "cuda" if torch.cuda.is_available() else "cpu"
-    model = ChessTransformer().to(device)
+    model = ChessTransformer(0).to(device)
     optimizer = torch.optim.Adam(model.parameters(), lr=1e-4)
 
-    model.load_state_dict(torch.load('model2.pth', weights_only=True))
-
-    for epoch in range(3, 100):
-        print(f"\nBeginning Epoch {epoch}")
-        avg_loss_white, avg_loss_black, results = play_epoch(model, model, optimizer, device=device, games_per_epoch=1024, train_batch_size=256)
-        print(f"Epoch {epoch} complete.")
-        print(f"\tAverage value loss white: {avg_loss_white:.4f}\n\tAverage value loss black: {avg_loss_black:.4f}")
-        print(f"\tDead Games: {results["dead"]}")
-        print(f"\tBlack Won: {results["black_won"]}")
-        print(f"\tWhite Won: {results["white_won"]}")
-        print(f"\tTies: {results["ties"]}")
+    for epoch in range(10):
+        avg_loss_white, avg_loss_black = play_epoch(
+            model, model, optimizer, epoch, device=device, games_per_epoch=256, train_batch_size=64
+        )
+        print()
+        print(f"Epoch {epoch} complete. Average value loss white: {avg_loss_white:.4f} Average value loss black: {avg_loss_black:.4f}")
         print(f"Saving Epoch Model as `model{epoch}.pth`")
         torch.save(model.state_dict(), f"model{epoch}.pth")

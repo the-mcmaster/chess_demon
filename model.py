@@ -3,17 +3,39 @@ model.py
 
 Board <-> tensor encoding and the transformer-based chess model.
 
+The board is encoded from the MOVER'S perspective (canonicalized), not in
+fixed white/black terms:
+    - "my" pieces always occupy channels 0-5, "opponent" pieces channels 6-11,
+      regardless of which color is actually moving.
+    - the rank axis is flipped (row -> 7 - row) whenever black is to move,
+      so the mover's pieces always start near row 0 and advance toward
+      row 7 - the same geometric picture the model sees whether it's
+      playing white or black. The file axis is never flipped (a
+      kingside/queenside-preserving mirror, not a full board rotation).
+    - castling rights are similarly relabeled as "mover" / "opponent"
+      instead of fixed white/black.
+
+Without this, the exact same piece arrangement would look identical to the
+network whether it's white's move or black's, even though the correct
+value (win/loss/draw) and correct pawn-push direction depend entirely on
+whose move it is.
+
 Input encoding (per board):  8 x 8 x 19
-    channels 0-11  : piece planes (6 piece types x 2 colors)
-    channel 12     : en passant target square (one-hot)
-    channels 13-16 : standard castling rights (white-K, white-Q, black-K, black-Q)
+    channels 0-5   : mover's pieces (pawn, knight, bishop, rook, queen, king)
+    channels 6-11  : opponent's pieces (same piece order)
+    channel 12     : en passant target square (one-hot, in canonical coords)
+    channels 13-16 : castling rights (mover-K, mover-Q, opponent-K, opponent-Q)
     channels 17-18 : "special" castling rules (placeholders - see TODO below)
 
 The model concatenates 2 positional-encoding channels (row, col normalized
-to 0-1) internally, giving the 21-length per-square vector used as the
-transformer token embedding (64 tokens, one per square).
+to 0-1, in canonical coordinates) internally, giving the 21-length
+per-square vector used as the transformer token embedding (64 tokens, one
+per square).
 
-Output: policy tensor of shape 8 x 8 x 73, plus a scalar value in [0, 1].
+Output: policy tensor of shape 8 x 8 x 73 (also in canonical coordinates -
+see move_to_plane_index / select_move_from_output in training.py for how
+legal moves are looked up in this frame), plus a scalar value in [0, 1]
+representing the mover's win probability.
 
 Policy channel layout (73 total), matching the move-encoding scheme you
 described:
@@ -26,7 +48,7 @@ import chess
 import torch
 import torch.nn as nn
 
-# Ordering used for the 6 "piece type" channels within each color block.
+# Ordering used for the 6 "piece type" channels within each mover/opponent block.
 PIECE_TYPES = [
     chess.PAWN,
     chess.KNIGHT,
@@ -43,29 +65,40 @@ NUM_POLICY_CHANNELS = 73
 
 
 def board_to_tensor(board: chess.Board) -> torch.Tensor:
-    """Convert a python-chess Board into the 19 x 8 x 8 input tensor."""
+    """
+    Convert a python-chess Board into the 19 x 8 x 8 input tensor, from the
+    perspective of the side to move (board.turn). See module docstring for
+    the canonicalization details.
+    """
+    mover = board.turn
     planes = torch.zeros(NUM_INPUT_CHANNELS, 8, 8, dtype=torch.float32)
 
-    # Channels 0-11: piece planes.
+    # Channels 0-11: piece planes, mover's pieces first.
     for square, piece in board.piece_map().items():
         row = chess.square_rank(square)   # 0 (rank 1) .. 7 (rank 8)
         col = chess.square_file(square)   # 0 (file a) .. 7 (file h)
+        if mover == chess.BLACK:
+            row = 7 - row
         piece_idx = PIECE_TYPES.index(piece.piece_type)
-        color_offset = 0 if piece.color == chess.WHITE else 6
+        color_offset = 0 if piece.color == mover else 6
         planes[piece_idx + color_offset, row, col] = 1.0
 
-    # Channel 12: en passant target square.
+    # Channel 12: en passant target square (canonical coordinates).
     if board.ep_square is not None:
         row = chess.square_rank(board.ep_square)
         col = chess.square_file(board.ep_square)
+        if mover == chess.BLACK:
+            row = 7 - row
         planes[12, row, col] = 1.0
 
-    # Channels 13-16: standard castling rights, broadcast across the whole plane
-    # (a common convention so the transformer sees the flag at every square).
-    planes[13, :, :] = 1.0 if board.has_kingside_castling_rights(chess.WHITE) else 0.0
-    planes[14, :, :] = 1.0 if board.has_queenside_castling_rights(chess.WHITE) else 0.0
-    planes[15, :, :] = 1.0 if board.has_kingside_castling_rights(chess.BLACK) else 0.0
-    planes[16, :, :] = 1.0 if board.has_queenside_castling_rights(chess.BLACK) else 0.0
+    # Channels 13-16: castling rights, relabeled mover/opponent instead of
+    # fixed white/black, broadcast across the whole plane (a common
+    # convention so the transformer sees the flag at every square).
+    opponent = not mover
+    planes[13, :, :] = 1.0 if board.has_kingside_castling_rights(mover) else 0.0
+    planes[14, :, :] = 1.0 if board.has_queenside_castling_rights(mover) else 0.0
+    planes[15, :, :] = 1.0 if board.has_kingside_castling_rights(opponent) else 0.0
+    planes[16, :, :] = 1.0 if board.has_queenside_castling_rights(opponent) else 0.0
 
     # Channels 17-18: special castling rules.
     # TODO: define and populate these for your 2 special castling moves.
@@ -79,6 +112,7 @@ def board_to_tensor(board: chess.Board) -> torch.Tensor:
 class ChessTransformer(nn.Module):
     def __init__(
         self,
+        epoch: int,
         d_model: int = D_MODEL,
         nhead: int = 3,
         num_layers: int = 12,
@@ -86,10 +120,11 @@ class ChessTransformer(nn.Module):
         dropout: float = 0.1,
     ):
         super().__init__()
+        self.epoch = epoch
         self.d_model = d_model
 
         # Positional encoding: 2 channels holding the (row, col) coordinates
-        # of each square, normalized to [0, 1]. a1 -> (0, 0), h8 -> (1, 1).
+        # of each square, normalized to [0, 1], in canonical coordinates.
         coords = torch.zeros(NUM_POSITIONAL_CHANNELS, 8, 8)
         for row in range(8):
             for col in range(8):
@@ -119,10 +154,10 @@ class ChessTransformer(nn.Module):
 
     def forward(self, x: torch.Tensor):
         """
-        x: (batch, 19, 8, 8)
+        x: (batch, 19, 8, 8), in canonical (mover-relative) coordinates.
         returns:
-            policy_logits: (batch, 8, 8, 73)
-            value: (batch,) in [0, 1]
+            policy_logits: (batch, 8, 8, 73), in canonical coordinates
+            value: (batch,) in [0, 1] - the mover's win probability
         """
         batch = x.shape[0]
 
@@ -138,7 +173,7 @@ class ChessTransformer(nn.Module):
         policy_logits = self.policy_head(encoded)          # (batch, 64, 73)
         policy_logits = policy_logits.view(batch, 8, 8, NUM_POLICY_CHANNELS)
 
-        encoded_flat = encoded.flatten(1) # (batch, 64 * 21)
+        encoded_flat = encoded.flatten(1)  # (batch, 64 * 21)
         value = self.value_head(encoded_flat).squeeze(-1)  # (batch,)
 
         return policy_logits, value
