@@ -287,6 +287,7 @@ def eval_positions(model, position_entries, device: str = "cpu", train_batch_siz
 
 if __name__ == "__main__":
     device = "cuda" if torch.cuda.is_available() else "cpu"
+    print(f"Using device `{device}`")
     model = ChessTransformer(0).to(device)
     optimizer = torch.optim.Adam(model.parameters(), lr=1e-4)
     
