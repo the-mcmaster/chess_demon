@@ -215,6 +215,20 @@ def play_epoch(
     train_batch_size: int = 256,
     temperature: float = 1.0,
 ):
+    if os.path.isdir(f"{model_white.epoch}"):
+        print(f"Removing old games path at `{model_white.epoch}/`")
+        # topdown=False is critical: it clears files/subfolders before the parent folder
+        for root, dirs, files in os.walk(f"{model_white.epoch}", topdown=False):
+            # 1. Delete all individual files
+            for f in files:
+                os.remove(os.path.join(root, f))
+            
+            # 2. Delete all now-empty subdirectories
+            for directory in dirs:
+                os.rmdir(os.path.join(root, directory))
+
+        # 3. Delete the top-level directory itself
+        os.rmdir(f"{model_white.epoch}")
     """
     Play games_per_epoch self-play games, then train each model's value
     head on the resulting (position, average outcome) pairs.
@@ -292,6 +306,9 @@ if __name__ == "__main__":
     optimizer = torch.optim.Adam(model.parameters(), lr=1e-4)
     
     start_epoch = None
+    guess_epoch = 0
+    while os.path.exists(f"model{guess_epoch}.pth"):
+        guess_epoch += 1
     if len(sys.argv) >= 2:
         start_epoch = int(sys.argv[1])
         print(f"Attempting to load at Epoch {start_epoch}")
@@ -299,8 +316,8 @@ if __name__ == "__main__":
         model.epoch = start_epoch
         print(f"Successfully loaded Epoch {start_epoch}")
     else:
-        print("No model number provided. Starting at Epoch 0")
-
+        print(f"No model number provided. Starting at Epoch {guess_epoch}")
+        start_epoch = guess_epoch - 1
 
     def print_summary(summary):
         print(f"\tEpoch Game Summary")
