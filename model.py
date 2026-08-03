@@ -34,8 +34,8 @@ per square).
 
 Output: policy tensor of shape 8 x 8 x 73 (also in canonical coordinates -
 see move_to_plane_index / select_move_from_output in training.py for how
-legal moves are looked up in this frame), plus a scalar value in [0, 1]
-representing the mover's win probability.
+legal moves are looked up in this frame), plus a scalar value in [-1, 1]
+representing the mover's expected outcome: -1.0 loss, 0.0 draw, 1.0 win.
 
 Policy channel layout (73 total), matching the move-encoding scheme you
 described:
@@ -149,7 +149,7 @@ class ChessTransformer(nn.Module):
             nn.Linear(32, 32),
             nn.ReLU(),
             nn.Linear(32, 1),
-            nn.Sigmoid(),
+            nn.Tanh(),
         )
 
     def forward(self, x: torch.Tensor):
@@ -157,7 +157,8 @@ class ChessTransformer(nn.Module):
         x: (batch, 19, 8, 8), in canonical (mover-relative) coordinates.
         returns:
             policy_logits: (batch, 8, 8, 73), in canonical coordinates
-            value: (batch,) in [0, 1] - the mover's win probability
+            value: (batch,) in [-1, 1] - the mover's expected outcome
+                (-1 loss, 0 draw, 1 win)
         """
         batch = x.shape[0]
 

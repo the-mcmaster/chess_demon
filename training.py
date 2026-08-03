@@ -13,12 +13,14 @@ One epoch:
       which side made that move
     - after all games, each recorded position is labeled with the average
       outcome seen for that exact position (from the mover's perspective:
-      1.0 win, 0.0 loss/draw per the outcome dict below)
-    - each model's value head is trained to regress toward that average
+      1.0 win, -1.0 loss, 0.0 draw, per the outcome dict below)
+    - each model's value head is trained to regress (via tanh output, so
+      targets live in [-1, 1]) toward that average
 """
 
 import random
 import os
+import sys
 
 import chess
 import chess.pgn
@@ -148,7 +150,7 @@ def play_game(
 
     Returns:
         history: list of (input_tensor, mover_color) for every ply played
-        outcome: dict mapping chess.WHITE / chess.BLACK -> result in {0.0, 1.0}
+        outcome: dict mapping chess.WHITE / chess.BLACK -> result in {-1.0, 0.0, 1.0}
                     - 0.0 for both sides if the game results in a draw
     """
     attempt = 0
@@ -176,13 +178,13 @@ def play_game(
 
         game = chess.pgn.Game.from_board(board)
 
-        game.headers["Event"] = f"Epoch {epoch} Game {kwargs["Count"]} Attempt {attempt}"
+        game.headers["Event"] = f"Epoch {epoch} Game {kwargs['Count']} Attempt {attempt}"
         game.headers["White"] = kwargs["White"]
         game.headers["Black"] = kwargs["Black"]
         game.headers["Result"] = board.result()
 
-        os.makedirs(f"{kwargs["Epoch"]}", exist_ok=True)
-        with open(f"{kwargs["Epoch"]}/epoch{kwargs["Epoch"]}game{kwargs["Count"]}attempt{attempt}.pgn", "w", encoding="utf-8") as pgn_file:
+        os.makedirs(f"{kwargs['Epoch']}", exist_ok=True)
+        with open(f"{kwargs['Epoch']}/epoch{kwargs['Epoch']}game{kwargs['Count']}attempt{attempt}.pgn", "w", encoding="utf-8") as pgn_file:
             pgn_file.write(str(game))
 
         if board.is_game_over(claim_draw=True):
@@ -194,13 +196,13 @@ def play_game(
         break
 
     if result == "1-0":
-        outcome = {chess.WHITE: 1.0, chess.BLACK: 0.0}
+        outcome = {chess.WHITE: 1.0, chess.BLACK: -1.0}
     elif result == "0-1":
-        outcome = {chess.WHITE: 0.0, chess.BLACK: 1.0}
+        outcome = {chess.WHITE: -1.0, chess.BLACK: 1.0}
     else:
-        outcome = {chess.WHITE: 0.5, chess.BLACK: 0.5}
+        outcome = {chess.WHITE: 0.0, chess.BLACK: 0.0}
 
-    return history, outcome
+    return history, outcome, attempt
 
 
 def play_epoch(
@@ -221,15 +223,22 @@ def play_epoch(
     # isn't hashable and can't be used as a dict key directly
     all_position_results = {chess.WHITE: {}, chess.BLACK: {}}
 
-    summary = {'white': 0, 'black': 0, 'draw': 0}
+    summary = {'white': 0, 'black': 0, 'draw': 0, 'attempts': 0, 'states': 0}
     for game_idx in range(games_per_epoch):
-        history, outcome = play_game(model_white, model_black, device=device, temperature=temperature, Epoch=epoch, White=f"Generation {model_white.epoch}", Black=f"Generation {model_black.epoch}", Count=game_idx + 1)
+        history, outcome, attempts = play_game(model_white, model_black, device=device, temperature=temperature, Epoch=epoch, White=f"Generation {model_white.epoch}", Black=f"Generation {model_black.epoch}", Count=game_idx + 1)
         for position_tensor, mover_color in history:
             key = position_tensor.numpy().tobytes()
             entry = all_position_results[mover_color].setdefault(
                 key, {"tensor": position_tensor, "results": []}
             )
             entry["results"].append(outcome[mover_color])
+        
+        if outcome[chess.WHITE] == 1: summary['white'] += 1
+        elif outcome[chess.WHITE] == -1: summary['black'] += 1
+        else: summary['draw'] += 1
+        summary['attempts'] += attempts
+        summary['states'] += len(all_position_results[chess.WHITE].keys())
+        summary['states'] += len(all_position_results[chess.BLACK].keys())
 
     average_loss_white_model = eval_positions(
         model_white, all_position_results[chess.WHITE], device=device, train_batch_size=train_batch_size
@@ -238,7 +247,7 @@ def play_epoch(
         model_black, all_position_results[chess.BLACK], device=device, train_batch_size=train_batch_size
     )
 
-    return (average_loss_white_model, average_loss_black_model)
+    return (average_loss_white_model, average_loss_black_model, summary)
 
 
 def eval_positions(model, position_entries, device: str = "cpu", train_batch_size: int = 256):
@@ -280,12 +289,38 @@ if __name__ == "__main__":
     device = "cuda" if torch.cuda.is_available() else "cpu"
     model = ChessTransformer(0).to(device)
     optimizer = torch.optim.Adam(model.parameters(), lr=1e-4)
+    
+    start_epoch = None
+    if len(sys.argv) >= 2:
+        start_epoch = int(sys.argv[1])
+        print(f"Attempting to load at Epoch {start_epoch}")
+        model.load_state_dict(torch.load(f"model{start_epoch}.pth", weights_only=True))
+        model.epoch = start_epoch
+        print(f"Successfully loaded Epoch {start_epoch}")
+    else:
+        print("No model number provided. Starting at Epoch 0")
 
-    for epoch in range(10):
-        avg_loss_white, avg_loss_black = play_epoch(
-            model, model, optimizer, epoch, device=device, games_per_epoch=256, train_batch_size=64
-        )
+
+    def print_summary(summary):
+        print(f"\tEpoch Game Summary")
+        print(f"\tAttempts:     {summary['attempts']}")
+        print(f"\tBoard States: {summary['states']}")
+        print(f"\tWhite Wins:   {summary['white']}")
+        print(f"\tBlack Wins:   {summary['black']}")
+        print(f"\tDraws:        {summary['draw']}")
+
+    for epoch in range(0 if not start_epoch else start_epoch + 1, 20):
+        model.epoch = epoch
+
         print()
+        print(f"Beginning Epoch {epoch}")
+        
+        games_this_epoch = min(1024, 64 * (2**epoch))
+        avg_loss_white, avg_loss_black, summary = play_epoch(
+            model, model, optimizer, epoch, device=device, games_per_epoch=games_this_epoch, train_batch_size=games_this_epoch // 4
+        )
+        
         print(f"Epoch {epoch} complete. Average value loss white: {avg_loss_white:.4f} Average value loss black: {avg_loss_black:.4f}")
+        print_summary(summary)
         print(f"Saving Epoch Model as `model{epoch}.pth`")
         torch.save(model.state_dict(), f"model{epoch}.pth")

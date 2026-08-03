@@ -1,0 +1,9 @@
+[Event "Epoch 0 Game 42 Attempt 1"]
+[Site "?"]
+[Date "????.??.??"]
+[Round "?"]
+[White "Generation 0"]
+[Black "Generation 0"]
+[Result "0-1"]
+
+1. f4 c5 2. g4 g5 3. a3 b5 4. h3 b4 5. e4 d5 6. d4 a6 7. f5 Qd7 8. Ne2 e5 9. Nd2 Qd8 10. a4 Ra7 11. dxc5 Nh6 12. Nd4 Qd6 13. Rg1 f6 14. c6 Be7 15. Bxa6 Bf8 16. a5 Be7 17. Ra3 Bd7 18. Kf1 exd4 19. Rf3 Qe6 20. Bc4 Rxa5 21. Re3 Qxc6 22. Rf3 Qxc4+ 23. Qe2 Qb3 24. Ke1 Qa2 25. Nb1 d3 26. b3 Bc5 27. c4 Qxb3 28. Qa2 Qc2 29. Qa4 Ba7 30. Qa1 Qxc1# 0-1
