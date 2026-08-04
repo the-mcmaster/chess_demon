@@ -188,7 +188,10 @@ def play_game(
             pgn_file.write(str(game))
 
         if board.is_game_over(claim_draw=True):
-            result = board.result(claim_draw=True)
+            if board.is_fifty_moves() or board.is_fivefold_repetition() or board.is_seventyfive_moves() or board.is_fifty_moves() or board.is_repetition():
+                result = "0-0"
+            else:
+                result = board.result(claim_draw=True)
         else:
             # hit the 200-full-move cap without a natural conclusion
             continue
@@ -199,6 +202,8 @@ def play_game(
         outcome = {chess.WHITE: 1.0, chess.BLACK: -1.0}
     elif result == "0-1":
         outcome = {chess.WHITE: -1.0, chess.BLACK: 1.0}
+    elif result == "0-0":
+        outcome = {chess.WHITE: -1.0, chess.BLACK: -1.0}
     else:
         outcome = {chess.WHITE: 0.0, chess.BLACK: 0.0}
 
