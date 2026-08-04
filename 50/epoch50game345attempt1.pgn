@@ -1,0 +1,9 @@
+[Event "Epoch 50 Game 345 Attempt 1"]
+[Site "?"]
+[Date "????.??.??"]
+[Round "?"]
+[White "Generation 50"]
+[Black "Generation 50"]
+[Result "0-1"]
+
+1. Nf3 a6 2. a4 f5 3. d4 h6 4. Nfd2 e6 5. g4 d6 6. e3 Be7 7. f4 Bg5 8. Be2 Kd7 9. h4 Bxf4 10. c4 Bg3+ 11. Kf1 fxg4 12. Nf3 gxf3 13. Nd2 Kc6 14. Nxf3 Nd7 15. Bd3 Ndf6 16. Be4+ Kb6 17. Bf5 Qe7 18. Ke2 Nh5 19. Kd3 Bf2 20. Bxe6 Ka5 21. Bd7 Bxd7 22. Qc2 Be1 23. Qb3 Bg4 24. Rb1 Bxf3 25. Bd2+ Bxd2 26. Qc2 Bc1 27. Qb3 Qxe3+ 28. Kc2 Qe7 29. Qc3+ Kb6 30. Kb3 Be2 31. Qb4+ Ka7 32. Qa5 Bd1+ 33. Kc3 Bg4 34. Kb4 Bd1 35. Re1 Qe4 36. Qb6+ cxb6 37. Rh1 Qd3 38. Rg1 Qa3+ 39. bxa3 Nhf6 40. Rh1 Nh5 41. Re1 Rd8 42. Ra1 Rb8 43. Rh1 Ng3 44. Re1 Nf6 45. Rf1 Nfh5 46. Rg1 Rhc8 47. Rf1 Re8 48. Kc3 Nf6 49. Kb4 Nfh5 50. Rf5 Be3 51. Ra5 Bd2# 0-1

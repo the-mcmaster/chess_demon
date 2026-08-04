@@ -1,0 +1,9 @@
+[Event "Epoch 50 Game 220 Attempt 1"]
+[Site "?"]
+[Date "????.??.??"]
+[Round "?"]
+[White "Generation 50"]
+[Black "Generation 50"]
+[Result "1-0"]
+
+1. a3 f5 2. d4 h5 3. Kd2 g5 4. Kc3 Bh6 5. Nd2 Nf6 6. Ndf3 c5 7. dxc5 Qc7 8. Bd2 d6 9. Nh4 Nfd7 10. Kb4 Qb6+ 11. cxb6 a5+ 12. Kc3 Ra7 13. Be1 Nf6 14. Kd4 Nbd7 15. bxa7 Nd5 16. Qb1 N7f6 17. Bc3 Nf4 18. a8=R Nh3 19. Bb4 Bf8 20. Qa2 Kd7 21. Bxa5 Kc6 22. Ra6+ bxa6 23. gxh3 Bb7 24. Qb3 Nd7 25. Qa4# 1-0

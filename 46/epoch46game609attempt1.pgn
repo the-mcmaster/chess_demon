@@ -4,6 +4,6 @@
 [Round "?"]
 [White "Generation 46"]
 [Black "Generation 46"]
-[Result "0-1"]
+[Result "1-0"]
 
-1. Nh3 Nc6 2. Nc3 Nd4 3. Nd5 Nh6 4. Nxe7 Nxe2 5. Qxe2 Qxe7 6. b3 a6 7. f4 b6 8. Kf2 Qe6 9. Kg3 d6 10. Kh4 Bd7 11. Qf3 Qf5 12. Qg4 Qxg4# 0-1
+1. Nf3 g6 2. d3 h5 3. Bh6 b6 4. Be3 a5 5. Ne5 h4 6. Bc1 a4 7. c3 d6 8. Qxa4+ c6 9. Nf3 Kd7 10. d4 Na6 11. Bf4 Nf6 12. e3 Rb8 13. d5 Ne4 14. Be5 Qe8 15. Qxe4 Rh6 16. Nxh4 Kc7 17. Ke2 Kd7 18. b3 Kc7 19. Qb4 Bh3 20. dxc6 Kc8 21. Bh8 Kd8 22. Na3 Be6 23. Qb5 Kc7 24. Rd1 Qxc6 25. Qf5 Bd7 26. e4 f6 27. Qg5 Rxh8 28. h3 Nc5 29. f4 Rxh4 30. g4 Kc8 31. Bg2 Rh5 32. gxh5 Kd8 33. Qxc5 Qa8 34. Qxd6 gxh5 35. Qxd7# 1-0

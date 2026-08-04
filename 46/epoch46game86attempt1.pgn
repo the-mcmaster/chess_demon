@@ -4,6 +4,6 @@
 [Round "?"]
 [White "Generation 46"]
 [Black "Generation 46"]
-[Result "*"]
+[Result "0-1"]
 
-1. Nc3 Nc6 2. Nh3 Nd4 3. Nd5 Nxe2 4. Nxe7 Qxe7 5. Qxe2 Nh6 6. b3 Qe6 7. Qe3 Qe5 8. g4 d5 9. Bg2 Bd7 10. O-O Rc8 11. Qf4 Qxf4 12. c4 Be6 13. cxd5 Bf5 14. d6 Qg3 15. fxg3 Bxg4 16. Rxf7 cxd6 17. Bh1 Bxh3 18. d3 Kxf7 19. Bd2 Kg6 20. Be3 Kh5 21. Bf4 Re8 22. Rc1 Re2 23. Re1 Rg2+ 24. Bxg2 a6 25. Bg5 a5 26. Bxh3 a4 27. Bxh6 axb3 28. axb3 gxh6 29. Re2 Bg7 30. Rg2 d5 31. g4+ Kh4 32. b4 Ba1 33. g5 d4 34. gxh6 Kxh3 35. Rg8 Bb2 36. b5 Bc1 37. b6 Bd2 38. Rg4 Be1 39. Rg5 Bf2+ 40. Kf1 Bg1 41. Rg6 Kxh2 42. Rg8 Kh1 43. Rg5 Bh2 44. Rg6 Rf8+ 45. Ke1 Rh8 46. Kf2 Bb8 47. Kf3 Bc7 48. Kg4 Bd6 49. Kh5 Be5 50. Rg7 Bf4 51. Rg8 Bg3 52. Re8 Bh2 53. Rg8 Bf4 54. Re8 Bg3 55. Rg8 Bh2 56. Rg1+ Bxg1 57. Kg5 Bh2 58. Kh4 Rf8 59. Kh5 Rh8 60. Kg5 Rf8 61. Kh4 Rh8 62. Kh5 Bd6 63. Kg5 Be5 64. Kh4 Bf4 65. Kh5 Bg3 66. Kg5 Bh2 67. Kh4 Bd6 68. Kh5 Be5 69. Kg5 *
+1. e4 a6 2. Na3 c6 3. Rb1 a5 4. f4 Nf6 5. Bd3 g6 6. Qe2 a4 7. Nf3 Ra7 8. Kf1 Bg7 9. Qf2 d6 10. b4 Ra6 11. Rb2 d5 12. Ke2 Ng4 13. Bxa6 Bd7 14. Qf1 Be6 15. Nc4 Bxb2 16. Qg1 Qd7 17. c3 c5 18. Nfe5 Nf2 19. Bxb2 dxe4 20. Kxf2 Bf5 21. Ng4 g5 22. Ke2 Qe6 23. Ke3 Qxc4 24. d4 f6 25. Ne5 Nxa6 26. h3 fxe5 27. a3 O-O 28. fxg5 Qb3 29. b5 Bg4 30. h4 Qxb5 31. d5 Qe2# 0-1

@@ -1,0 +1,9 @@
+[Event "Epoch 50 Game 512 Attempt 1"]
+[Site "?"]
+[Date "????.??.??"]
+[Round "?"]
+[White "Generation 50"]
+[Black "Generation 50"]
+[Result "0-1"]
+
+1. c4 f5 2. Qc2 c5 3. d4 h5 4. Be3 e5 5. dxc5 Qf6 6. Bd4 g5 7. e4 Be7 8. Qb3 Bd6 9. Kd2 fxe4 10. Be2 Bxc5 11. Qa4 Qxf2 12. Bxc5 Qf6 13. Kc3 Qf8 14. Nd2 Qf4 15. Ndf3 Qf6 16. Nh4 Qb6 17. Bxb6 g4 18. Kb4 Ke7 19. Bd8+ Kd6 20. Ka5 Kc5 21. Bd3 exd3 22. Bb6+ axb6# 0-1

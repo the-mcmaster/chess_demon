@@ -1,0 +1,9 @@
+[Event "Epoch 50 Game 99 Attempt 1"]
+[Site "?"]
+[Date "????.??.??"]
+[Round "?"]
+[White "Generation 50"]
+[Black "Generation 50"]
+[Result "0-1"]
+
+1. a4 f5 2. Ra3 d5 3. Rg3 Be6 4. f4 Qd7 5. Rg6 hxg6 6. d4 Qd8 7. Kd2 Rh4 8. Kc3 Rh7 9. Kb4 c5+ 10. dxc5 g5 11. Nd2 gxf4 12. Ndf3 Qc7 13. Nh4 b5 14. cxb6 Rh8 15. Ka5 Qxb6# 0-1

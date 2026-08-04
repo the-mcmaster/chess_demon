@@ -51,6 +51,7 @@ import chess
 import chess.pgn
 import torch
 import torch.nn.functional as F
+from tqdm import tqdm
 
 from model import ChessTransformer, board_to_tensor
 
@@ -328,8 +329,8 @@ def play_game(
         outcome = {chess.WHITE: -1.0, chess.BLACK: -1.0}
     else:
         outcome = {
-            chess.WHITE: 0.0 if board.turn == chess.BLACK else -0.1, # White last moved, causing the draw
-            chess.BLACK: 0.0 if board.turn == chess.WHITE else -0.1  # Black last moved, causing the draw
+            chess.WHITE: 0.0 if board.turn == chess.WHITE else -0.1,
+            chess.BLACK: 0.0 if board.turn == chess.BLACK else -0.1
         }
 
     return history, outcome, attempt
@@ -396,26 +397,34 @@ def play_epoch(
             Epoch=epoch, White=f"Generation {model_white.epoch}",
             Black=f"Generation {model_black.epoch}", Count=game_idx + 1,
         )
+    
+    
+    with tqdm(
+        total=games_per_epoch, 
+        desc=f"Epoch {epoch} Games", 
+        leave=False, # <-- This instantly deletes the bar when the loop ends
+        bar_format="{l_bar}{bar:30}{r_bar}" # Limits progress bar width
+    ) as progress_bar:
+        with concurrent.futures.ThreadPoolExecutor(max_workers=threads) as executor:
+            futures = [executor.submit(run_one_game, game_idx) for game_idx in range(games_per_epoch)]
 
-    with concurrent.futures.ThreadPoolExecutor(max_workers=threads) as executor:
-        futures = [executor.submit(run_one_game, game_idx) for game_idx in range(games_per_epoch)]
+            for future in concurrent.futures.as_completed(futures):
+                history, outcome, attempts = future.result()
+                progress_bar.update(1)
 
-        for future in concurrent.futures.as_completed(futures):
-            history, outcome, attempts = future.result()
+                for entry in history:
+                    mover = entry["mover"]
+                    all_occurrences[mover].append({
+                        "tensor": entry["tensor"],
+                        "board_fen": entry["board_fen"],
+                        "move_uci": entry["move_uci"],
+                        "outcome": outcome[mover],
+                    })
 
-            for entry in history:
-                mover = entry["mover"]
-                all_occurrences[mover].append({
-                    "tensor": entry["tensor"],
-                    "board_fen": entry["board_fen"],
-                    "move_uci": entry["move_uci"],
-                    "outcome": outcome[mover],
-                })
-
-            if outcome[chess.WHITE] == 1: summary['white'] += 1
-            elif outcome[chess.WHITE] == -1: summary['black'] += 1
-            else: summary['draw'] += 1
-            summary['attempts'] += attempts
+                if outcome[chess.WHITE] == 1: summary['white'] += 1
+                elif outcome[chess.WHITE] == -1: summary['black'] += 1
+                else: summary['draw'] += 1
+                summary['attempts'] += attempts
 
     summary['states'] = len(all_occurrences[chess.WHITE]) + len(all_occurrences[chess.BLACK])
 
@@ -462,51 +471,58 @@ def train_on_occurrences(model, occurrences, optimizer: torch.optim.Optimizer, d
     indices = list(range(len(occurrences)))
     random.shuffle(indices)
 
-    for start in range(0, len(indices), train_batch_size):
-        batch_idx = indices[start:start + train_batch_size]
-        batch = [occurrences[i] for i in batch_idx]
+    with tqdm(
+        total=len(indices), 
+        desc=f"Epoch {epoch} Occurrences", 
+        leave=False, # <-- This instantly deletes the bar when the loop ends
+        bar_format="{l_bar}{bar:30}{r_bar}" # Limits progress bar width
+    ) as progress_bar:
+        for start in range(0, len(indices), train_batch_size):
+            batch_idx = indices[start:start + train_batch_size]
+            batch = [occurrences[i] for i in batch_idx]
 
-        batch_x = torch.stack([o["tensor"] for o in batch]).to(device)
-        batch_y = torch.tensor([o["outcome"] for o in batch], dtype=torch.float32, device=device)
+            batch_x = torch.stack([o["tensor"] for o in batch]).to(device)
+            batch_y = torch.tensor([o["outcome"] for o in batch], dtype=torch.float32, device=device)
 
-        optimizer.zero_grad()
-        policy_logits, value_preds = model(batch_x)  # (B, 8, 8, 73), (B,)
+            optimizer.zero_grad()
+            policy_logits, value_preds = model(batch_x)  # (B, 8, 8, 73), (B,)
 
-        value_loss = F.mse_loss(value_preds, batch_y)
+            value_loss = F.mse_loss(value_preds, batch_y)
 
-        # advantage: how much better/worse the actual outcome was than the
-        # value head already expected. Detached so this only acts as a
-        # fixed per-sample weight for the policy loss, not a second
-        # gradient path back through the value head.
-        advantages = batch_y - value_preds.detach()
+            # advantage: how much better/worse the actual outcome was than the
+            # value head already expected. Detached so this only acts as a
+            # fixed per-sample weight for the policy loss, not a second
+            # gradient path back through the value head.
+            advantages = batch_y - value_preds.detach()
 
-        policy_losses = []
-        for i, occurrence in enumerate(batch):
-            board = chess.Board(occurrence["board_fen"])
-            mover = board.turn
-            legal_moves = list(board.legal_moves)
+            policy_losses = []
+            for i, occurrence in enumerate(batch):
+                board = chess.Board(occurrence["board_fen"])
+                mover = board.turn
+                legal_moves = list(board.legal_moves)
 
-            move_logits = []
-            chosen_idx = None
-            for j, mv in enumerate(legal_moves):
-                from_row, from_col = _canonical_rc(mv.from_square, mover)
-                plane_idx = move_to_plane_index(mv, board)
-                move_logits.append(policy_logits[i, from_row, from_col, plane_idx])
-                if mv.uci() == occurrence["move_uci"]:
-                    chosen_idx = j
+                move_logits = []
+                chosen_idx = None
+                for j, mv in enumerate(legal_moves):
+                    from_row, from_col = _canonical_rc(mv.from_square, mover)
+                    plane_idx = move_to_plane_index(mv, board)
+                    move_logits.append(policy_logits[i, from_row, from_col, plane_idx])
+                    if mv.uci() == occurrence["move_uci"]:
+                        chosen_idx = j
 
-            move_logits = torch.stack(move_logits)
-            log_probs = F.log_softmax(move_logits, dim=0)
-            policy_losses.append(-log_probs[chosen_idx] * advantages[i])
+                move_logits = torch.stack(move_logits)
+                log_probs = F.log_softmax(move_logits, dim=0)
+                policy_losses.append(-log_probs[chosen_idx] * advantages[i])
+                progress_bar.update(1)
 
-        policy_loss = torch.stack(policy_losses).mean()
+            policy_loss = torch.stack(policy_losses).mean()
 
-        loss = value_loss + policy_loss
-        loss.backward()
-        optimizer.step()
+            loss = value_loss + policy_loss
+            loss.backward()
+            optimizer.step()
 
-        total_loss += loss.item()
-        num_batches += 1
+            total_loss += loss.item()
+            num_batches += 1
 
     return total_loss / max(num_batches, 1)
 
