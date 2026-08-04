@@ -327,7 +327,10 @@ def play_game(
     elif result == "0-0":
         outcome = {chess.WHITE: -1.0, chess.BLACK: -1.0}
     else:
-        outcome = {chess.WHITE: 0.0, chess.BLACK: 0.0}
+        outcome = {
+            chess.WHITE: 0.0 if board.turn == chess.BLACK else -0.1, # White last moved, causing the draw
+            chess.BLACK: 0.0 if board.turn == chess.WHITE else -0.1  # Black last moved, causing the draw
+        }
 
     return history, outcome, attempt
 
