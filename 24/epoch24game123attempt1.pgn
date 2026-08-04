@@ -1,0 +1,9 @@
+[Event "Epoch 24 Game 123 Attempt 1"]
+[Site "?"]
+[Date "????.??.??"]
+[Round "?"]
+[White "Generation 24"]
+[Black "Generation 24"]
+[Result "0-1"]
+
+1. b3 a5 2. d3 e6 3. Nd2 Qe7 4. Ndf3 Qf6 5. d4 Qf5 6. Nh4 f6 7. f3 Qg4 8. Bd2 Kf7 9. fxg4 h6 10. Kf2 b6 11. Be3 Rh7 12. a3 h5 13. Kg3 Ra6 14. gxh5 Be7 15. Bf4 a4 16. Rc1 axb3 17. Kg4 bxc2 18. Bg5 cxd1=Q 19. Bh6 gxh6 20. Rc3 Qxf1 21. Re3 Ra5 22. h3 Ra4 23. Rg3 Rxa3 24. e3 Rc3 25. Rh2 b5 26. e4 Re3 27. d5 Bb7 28. dxe6+ dxe6 29. e5 Nd7 30. exf6 Bc6 31. fxe7 Ndf6# 0-1

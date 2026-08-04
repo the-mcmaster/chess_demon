@@ -1,0 +1,9 @@
+[Event "Epoch 42 Game 200 Attempt 1"]
+[Site "?"]
+[Date "????.??.??"]
+[Round "?"]
+[White "Generation 42"]
+[Black "Generation 42"]
+[Result "0-1"]
+
+1. f4 h5 2. Kf2 e5 3. a4 b5 4. Ra3 a5 5. axb5 Qe7 6. Rc3 Qf6 7. e4 Qh6 8. Qe2 c5 9. Re3 exf4 10. Qf3 Ra6 11. Qh3 g5 12. Rg3 Nf6 13. d4 Rc6 14. Nd2 d5 15. Ndf3 Re6 16. Nh4 dxe4 17. Bd2 Bg7 18. Be3 Nbd7 19. Rxg5 O-O 20. Bxf4 cxd4 21. c4 Kh7 22. g4 Rh8 23. Kg3 d3 24. gxh5 Nxh5+ 25. Kg4 Rg6 26. Bg2 Ndf6# 0-1

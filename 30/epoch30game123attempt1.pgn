@@ -1,0 +1,9 @@
+[Event "Epoch 30 Game 123 Attempt 1"]
+[Site "?"]
+[Date "????.??.??"]
+[Round "?"]
+[White "Generation 30"]
+[Black "Generation 30"]
+[Result "*"]
+
+1. b4 g6 2. c3 Bg7 3. a3 Bh6 4. f4 e5 5. Kf2 b5 6. Kg3 exf4+ 7. Kg4 Qe7 8. d3 Qf6 9. Bd2 Qg5+ 10. Kf3 Qh4 11. Be3 c5 12. Nd2 Ne7 13. Rc1 O-O 14. bxc5 f6 15. d4 a6 16. Bxf4 g5 17. Bxg5 Ng6 18. Bxh6 Qh3+ 19. gxh3 Ra7 20. Bg2 Rc7 21. Qf1 f5 22. Re1 d5 23. cxd6 Nd7 24. a4 Nf6 25. axb5 axb5 26. d7 Nh5 27. d5 Bxd7 28. c4 bxc4 29. h4 Be6 30. dxe6 Re7 31. Bh3 Rg7 32. Qg2 Nhf4 33. e4 Nxh3 34. Qxh3 Ne5+ 35. Kf4 Ng4 36. Ndf3 Rg6 37. exf5 Ne3 38. Re2 Ng2+ 39. Rxg2 Rf7 40. Ne2 Rf6 41. Ng3 c3 42. Ne4 Rg5 43. Nexg5 Rxh6 44. h5 c2 45. Nh4 c1=Q+ 46. Ke5 Qe1+ 47. Kd6 Qg1 48. Ke7 Kg7 49. f6+ Rxf6 50. Kd7 Rh6 51. Ke8 Rxh5 52. Nf5+ Kg6 53. Nh6 Rxh3 54. Nxh3+ Kh5 55. Nf7 h6 56. Nh8 Kh4 57. Nf4 h5 58. Nxh5 Kh3 59. Rg3+ Qxg3 60. e7 Qxh2 61. Nf6 Qxh1 62. Nh7 Qg1 63. Nf8 Kh2 64. Nfg6 Kh1 65. Kd8 Qg3 66. e8=Q Qh2 67. Ne7 Qg2 68. Ng8 Kg1 69. Nh6 Qh1 70. Qg8+ Kf1 71. N6f7 Qxh8 72. Nxh8 Ke1 73. Qc4 Kd1 74. Qd5+ Kc1 75. Qe6 Kb1 76. Qf7 Ka1 77. Qh7 Kb2 78. Kc8 Kc1 79. Qg8 Kb1 80. Kb8 Ka1 81. Qd8 Kb1 82. Qf8 Ka1 83. Qh6 Kb1 84. Qh7+ Ka1 85. Qg7+ Kb1 86. Qg8 Ka1 87. Qf8 Kb1 *

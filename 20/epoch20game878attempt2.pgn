@@ -1,0 +1,9 @@
+[Event "Epoch 20 Game 878 Attempt 2"]
+[Site "?"]
+[Date "????.??.??"]
+[Round "?"]
+[White "Generation 20"]
+[Black "Generation 20"]
+[Result "0-1"]
+
+1. e3 e6 2. Ke2 Qe7 3. h3 h6 4. Kf3 a6 5. a3 a5 6. Kf4 Qf6+ 7. Ke4 h5 8. b3 Ke7 9. g3 a4 10. b4 Ra7 11. Bg2 b6 12. f4 c6 13. b5 Qf5+ 14. Kd4 Qxf4+ 15. exf4 d6 16. f5 Nd7 17. Rh2 Ndf6 18. d3 Rh7 19. Nd2 h4 20. Ndf3 Nh5 21. Nxh4 d5 22. Ra2 c5+ 23. Ke5 exf5 24. c3 Bd7 25. Bd2 Rh6 26. c4 g6 27. g4 g5 28. gxh5 Ra6 29. d4 Be6 30. Be3 Bg7# 0-1

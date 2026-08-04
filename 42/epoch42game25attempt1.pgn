@@ -1,0 +1,9 @@
+[Event "Epoch 42 Game 25 Attempt 1"]
+[Site "?"]
+[Date "????.??.??"]
+[Round "?"]
+[White "Generation 42"]
+[Black "Generation 42"]
+[Result "0-1"]
+
+1. g4 c5 2. Bg2 b5 3. Bh3 h5 4. a4 f5 5. c4 a5 6. axb5 Kf7 7. f4 d5 8. cxd5 Nd7 9. gxh5 Ndf6 10. d4 Nxh5 11. e4 e5 12. Qd3 cxd4 13. Nd2 Qd6 14. Kf2 exf4 15. Qf3 Qf6 16. b4 axb4 17. Ra3 Qh6 18. Rc3 Bd7 19. Re3 Rc8 20. exf5 Be6 21. Qg4 dxe3+ 22. Kf3 Re8 23. dxe6+ Rxe6 24. Qxh5+ Rg6 25. fxg6+ Kf6 26. Kg4 e2 27. Ndf3 e1=Q 28. Nh4 Qxg1+ 29. Ng2 f3 30. Bd2 fxg2 31. Qxh6 gxh6 32. Be3 gxh1=Q+ 33. Kh5 Bg7 34. Bf4 Rh7 35. Bg5+ Qxg5# 0-1

@@ -4,6 +4,6 @@
 [Round "?"]
 [White "Generation 2"]
 [Black "Generation 2"]
-[Result "0-1"]
+[Result "1-0"]
 
-1. c3 Nh6 2. e3 f5 3. Bb5 c5 4. g4 a6 5. g5 Ra7 6. e4 g6 7. h3 f4 8. b3 Ra8 9. c4 a5 10. gxh6 e6 11. h4 Qxh4 12. b4 g5 13. e5 Be7 14. d4 f3 15. a3 Bd6 16. a4 Qxd4 17. Bxg5 cxb4 18. Kf1 Nc6 19. Qc2 Qc3 20. Qe4 Na7 21. Ra2 Kf7 22. Qd3 Qb2 23. c5 Bxe5 24. Qf5+ exf5 25. Ra3 Kg8 26. Bxd7 Bd6 27. Ra2 Bc7 28. Nc3 Bh2 29. Nh3 f4 30. Be8 b3 31. Ra3 Bd7 32. Ne4 Qc1# 0-1
+1. Nf3 Nf6 2. Ne5 Na6 3. Nxd7 Ne4 4. Na3 Nxd2 5. Kxd2 Kxd7 6. Nb5 Kc6+ 7. Nd6 Nc5 8. f4 Nb3+ 9. Kc3 Nxa1 10. Nxc8 Qd3+ 11. Kb4 Qa3+ 12. Kxa3 Kb5 13. Nb6 Ka6 14. Nxa8 e5+ 15. b4 Bxb4+ 16. Kxb4 h5 17. Nxc7+ Kb6 18. Qd6# 1-0

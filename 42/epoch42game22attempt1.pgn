@@ -1,0 +1,9 @@
+[Event "Epoch 42 Game 22 Attempt 1"]
+[Site "?"]
+[Date "????.??.??"]
+[Round "?"]
+[White "Generation 42"]
+[Black "Generation 42"]
+[Result "0-1"]
+
+1. h4 d5 2. f4 a5 3. e4 e6 4. Kf2 h5 5. Qe2 dxe4 6. Kg3 Bd7 7. d4 g5 8. fxg5 Bg7 9. Qf3 Bh6 10. Qg4 f5 11. Bd2 Qe7 12. a4 Kf7 13. Kh2 fxg4 14. gxh6 Qf8 15. Ra3 c5 16. Rc3 Kg6 17. Be3 cxd4 18. Nd2 dxe3 19. Ndf3 Qg7 20. b4 exf3 21. Rxe3 fxg2 22. Rg3 Ra6 23. Bxg2 axb4 24. Bh3 Qxh6 25. a5 Rc6 26. Rxg4+ Kh7 27. Rg6 b5 28. c4 Rxc4 29. Rxg8 Re4 30. Nf3 Rg4 31. Ne5 b3 32. Ng6 Rg2+ 33. Kxg2 Na6 34. Nf8+ Qxf8 35. Rh2 Qg7+ 36. Kh1 Nc5 37. Re2 Qh6 38. Re4 Nxe4 39. Kh2 Ng3 40. a6 Be8 41. a7 Bf7 42. a8=Q Bg6 43. Qc8 b4 44. Qe8 b2 45. Qf7+ Bxf7 46. Rxg3 Bg6 47. Rg5 b3 48. Rxg6 b1=Q 49. Rg8 Qd1 50. Rg2 Qf1 51. Rg4 Qh1+ 52. Kg3 b2 53. Rg6 b1=Q 54. Rg8 Qbd1 55. Rg4 Qdf1 56. Rg6 Qfg2+ 57. Bxg2 e5 58. Bh3 e4 59. Rg8 e3 60. Rg5 e2 61. Rg7+ Kxg7 62. Bd7 e1=Q# 0-1

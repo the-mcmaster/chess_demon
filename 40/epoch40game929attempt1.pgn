@@ -1,0 +1,9 @@
+[Event "Epoch 40 Game 929 Attempt 1"]
+[Site "?"]
+[Date "????.??.??"]
+[Round "?"]
+[White "Generation 40"]
+[Black "Generation 40"]
+[Result "0-1"]
+
+1. e4 e5 2. f4 Qe7 3. Kf2 Qf6 4. b4 Qh6 5. Kg3 a5 6. Qe2 exf4+ 7. Kg4 axb4 8. h4 b5 9. c4 c5 10. d4 cxd4 11. Qf3 bxc4 12. Nd2 d5# 0-1

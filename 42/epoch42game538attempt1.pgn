@@ -1,0 +1,9 @@
+[Event "Epoch 42 Game 538 Attempt 1"]
+[Site "?"]
+[Date "????.??.??"]
+[Round "?"]
+[White "Generation 42"]
+[Black "Generation 42"]
+[Result "0-1"]
+
+1. g4 f5 2. Bg2 c5 3. Bh3 b5 4. f4 Kf7 5. Kf2 Kg6 6. Kg3 fxg4 7. d4 a5 8. Nd2 cxd4 9. Ndf3 Ra6 10. Qf1 Rc6 11. c4 bxc4 12. Qg2 gxh3 13. Nh4+ Kh5 14. Bd2 Re6 15. Qxh3 Rg6+ 16. Nxg6+ Kxg6 17. Be3 h5 18. Kh4 d5 19. Rc1 dxe3 20. Re1 Nd7 21. b4 Ndf6 22. a4 Rh6 23. b5 Bd7 24. b6 Kh7 25. f5 Be6 26. b7 g5+ 27. fxg6+ Kg7 28. b8=Q Bf5 29. Qxd8 e5 30. Qxf8+ Kh8 31. Nf3 Bg4 32. Reg1 Bxh3 33. Nxe5 d4 34. Rg3 d3 35. Rg5 Ne4 36. Qg7+ Kxg7 37. Nf3 dxe2 38. Ne5 Ng3 39. Nd7 c3 40. Nf8 Nf6 41. Re1 Kh8 42. Rg1 Nf1 43. R1g3 c2 44. g7+ Kg8 45. Ng6 Kh7 46. Nf8+ Kg8 47. Rg6 Ne4 48. R3g5 Neg3 49. Rc5 c1=Q 50. Re5 Qe1 51. Reg5 Qf2 52. hxg3 Qh2 53. g4 Qh1 54. gxh5 e1=Q+ 55. Rg3 e2 56. Rd6 Qf2 57. Rf6 Qfh2 58. Rxh6 Nxg3 59. Rh8+ Kxg7 60. h6+ Kxh8 61. h7 e1=Q 62. Ng6+ Kxh7 63. Nf8+ Kh6 64. Ng6 Qeg1 65. Nf8 Nf1 66. Ng6 Q2g2 67. Nf8 Qg1h2 68. Ng6 Qgg1 69. Nf8 Qg7 70. Ng6 Qh8 71. Nf8 Qh7 72. Ng6 Qb2 73. Nf8 Qc1 74. Ng6 Qe1# 0-1

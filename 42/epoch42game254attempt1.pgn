@@ -1,0 +1,9 @@
+[Event "Epoch 42 Game 254 Attempt 1"]
+[Site "?"]
+[Date "????.??.??"]
+[Round "?"]
+[White "Generation 42"]
+[Black "Generation 42"]
+[Result "0-1"]
+
+1. h4 e5 2. f4 exf4 3. a4 Qe7 4. Rh3 f5 5. Kf2 Kf7 6. d4 h5 7. Bd2 a5 8. b4 Rh6 9. Be3 b5 10. Nd2 axb4 11. Bxf4 Kg6 12. Kg3 c5 13. c4 bxc4 14. Rc1 Ra6 15. Bg5 Rc6 16. Ndf3 cxd4 17. Bxh6 gxh6 18. e4 Qf6 19. exf5+ Kh7 20. Qd3 Re6 21. Re1 Bg7 22. Qe4 Rxe4 23. Re3 Qg5+ 24. Kh2 Rg4 25. Re5 Rxg2+ 26. Bxg2 Qg3+ 27. Kxg3 d5 28. Re7 Nd7 29. Rxg7+ Kxg7 30. a5 Ndf6 31. Bh1 Bd7 32. Ne5 Be6 33. Ng6 Bxf5 34. a6 Bg4 35. a7 Bxh3 36. Nf8 Kh8 37. Kh2 b3 38. Kxh3 c3 39. Nf3 c2 40. Ne5 c1=Q 41. Neg6+ Kg7 42. a8=Q Qe1 43. Qb7+ Qe7 44. Qd7 b2 45. Qe8 Ne4 46. Qf7+ Kxf7 47. Bg2 Ng3 48. Bh1 Qf6 49. Bg2 Qf4 50. Bh1 Qxh4+ 51. Kxh4 Kf6 52. Ne5 Kg7 53. Neg6 Nf1 54. Kxh5 b1=Q 55. Nh4 Qd1+ 56. Nf3 Qe2 57. Ng6 Qg2 58. Nfh4 Qxh1 59. Nf8 Kh8 60. Ng6+ Kh7 61. Nf8+ Kg7 62. Ng6 Nf6# 0-1

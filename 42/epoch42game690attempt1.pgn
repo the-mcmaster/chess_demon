@@ -1,0 +1,9 @@
+[Event "Epoch 42 Game 690 Attempt 1"]
+[Site "?"]
+[Date "????.??.??"]
+[Round "?"]
+[White "Generation 42"]
+[Black "Generation 42"]
+[Result "0-1"]
+
+1. c4 c5 2. b4 g5 3. d4 f5 4. Nd2 cxd4 5. a4 e5 6. Ndf3 Qe7 7. Nh4 d5 8. f4 Qg7 9. g4 Kf7 10. cxd5 a5 11. Bd2 fxg4 12. Rc1 Nd7 13. Rc3 Ndf6 14. fxg5 Nh5 15. Be3 Qh6 16. Bf4 axb4 17. Qd3 b5 18. gxh6 Bg7 19. Bg5 Bd7 20. Kf2 Ra6 21. Qf3+ Ngf6 22. axb5 Bxh6 23. Qh3 bxc3 24. e4 Rc6 25. Bxh6 Re6 26. Bg2 gxh3 27. dxe6+ Bxe6 28. Bxh3 Bf5 29. exf5 c2 30. Kf3 e4+ 31. Kg2 Kg8 32. Ng6 e3 33. Nf8 c1=Q 34. b6 Qe1 35. b7 Qxg1+ 36. Rxg1 Ne4 37. Kh1+ Neg3+ 38. Rxg3+ Nxg3+ 39. Kg2 Nf1 40. f6 d3 41. Ng6 d2 42. Kh1 d1=Q 43. Nf8 Qd8 44. f7+ Kxf7 45. Ng6 Qf8 46. b8=Q Qg7 47. Qd8 Kxg6 48. Qf8 Qxh6 49. Qxh8 Kh5 50. Qe8+ Kh4 51. Qg8 Kxh3 52. Qxh7 Qh4 53. Qh8 e2 54. Qc3+ Ng3+ 55. Qxg3+ Qxg3 56. hxg3 e1=Q# 0-1

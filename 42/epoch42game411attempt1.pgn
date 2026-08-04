@@ -1,0 +1,9 @@
+[Event "Epoch 42 Game 411 Attempt 1"]
+[Site "?"]
+[Date "????.??.??"]
+[Round "?"]
+[White "Generation 42"]
+[Black "Generation 42"]
+[Result "0-1"]
+
+1. b4 a5 2. c4 e5 3. h4 axb4 4. Rh3 c5 5. f4 Ra6 6. g4 exf4 7. Bg2 Rc6 8. a4 Re6 9. Kf2 Re4 10. Qf1 Rxe2+ 11. Kf3 Rxg2 12. Qxg2 Qe7 13. d4 cxd4 14. Ra3 g5 15. Nd2 Bg7 16. Rc3 gxh4 17. Re3 dxe3 18. Qh1 f5 19. Kg2 fxg4 20. Ndf3 Bh6 21. Nxh4 Qg7 22. Bd2 Kf7 23. Bxe3 d5 24. Bxf4 Bd7 25. cxd5 gxh3+ 26. Kf3 Be6 27. Qxh3 Nd7 28. dxe6+ Kf6 29. Bg5+ Kxg5 30. Kg2 Ndf6 31. Kh1 Nh5 32. a5 b5 33. axb6 Ng3+ 34. Kh2 b3 35. Ng6 Nf6 36. Nh4 Qg6 37. b7 Qh5 38. Ng6 Qxh3+ 39. Kxh3 Nfh5 40. Nf8 Nf1 41. Nf3+ Kf4 42. Nh4 Kg5 43. b8=Q b2 44. Qd8+ Nf6 45. e7 Nh5 46. e8=Q+ Kf4 47. Nxh7 Rxh7 48. Qg8 Nhg3 49. Qdf8+ Nf5 50. Qfg7 Nxh4 51. Q7h8 Ng2 52. Qgxh7 Kf3 53. Qc7 b1=Q 54. Qe7 Qd1 55. Qeg7 Qe2 56. Qgxh6 Kf2 57. Q6h7 Kg1 58. Qe7 Qe1 59. Qeg7 Qf2 60. Qgh6 Qg3# 0-1

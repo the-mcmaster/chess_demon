@@ -1,0 +1,9 @@
+[Event "Epoch 42 Game 1007 Attempt 1"]
+[Site "?"]
+[Date "????.??.??"]
+[Round "?"]
+[White "Generation 42"]
+[Black "Generation 42"]
+[Result "0-1"]
+
+1. a4 b5 2. axb5 c5 3. d3 f5 4. c4 d5 5. Nd2 Qd6 6. f4 Bd7 7. Kf2 Kf7 8. Ndf3 Qf6 9. cxd5 Qh6 10. d6 Be6 11. dxe7 Nd7 12. h4 g5 13. exf8=Q+ Kg6 14. e4 Ndf6 15. b4 Kh5 16. g4+ fxg4 17. Bd2 Rc8 18. Rc1 gxh4 19. Nxh4 Nxe4+ 20. dxe4 Bf5 21. Bg2 Re8 22. Kg3 Re6 23. exf5 Rg6 24. fxg6 a5 25. Rc3 axb4 26. Be3 bxc3 27. Qf1 c4 28. Rh3 gxh3 29. gxh7 Nf6 30. Qxh8 c2 31. Bh1 c1=Q 32. Qg2 Qe1+ 33. Kh2 Qxg1+ 34. Kxh3 Ne4 35. Qg4+ Qxg4+ 36. Kh2 Ng3 37. Bf2 Qh3+ 38. Kxh3 Nf1 39. Bg3 Nxg3 40. b6 Nf1 41. Ng6 c3 42. f5 c2 43. Nf8 c1=Q 44. b7 Qe1 45. f6 Qf2 46. b8=Q Qg1 47. Qd8 Qh2# 0-1

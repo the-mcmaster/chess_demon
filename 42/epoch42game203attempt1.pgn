@@ -1,0 +1,9 @@
+[Event "Epoch 42 Game 203 Attempt 1"]
+[Site "?"]
+[Date "????.??.??"]
+[Round "?"]
+[White "Generation 42"]
+[Black "Generation 42"]
+[Result "0-1"]
+
+1. b4 a5 2. g4 axb4 3. Bg2 h5 4. gxh5 f5 5. Bh3 Ra6 6. d4 Ra4 7. Nd2 Kf7 8. Ndf3 d5 9. Nh4 Rxa2 10. f4 Rxc2 11. Qd3 Nd7 12. e4 Ndf6 13. Qf3 Nxh5 14. Bd2 Qd6 15. Kf2 Qe5 16. Qg4 c5 17. Qxh5+ g6 18. exf5 cxd4 19. Rc1 Rh6 20. Re1 gxh5 21. Kg3 Bg7 22. Be3 Re2 23. f6 b5 24. fxg7 Rg2+ 25. Kf3 Qg5 26. fxg5 Bd7 27. gxh6 dxe3 28. Rxe3 Be6 29. Re5 Bf5 30. Rxe7+ Kf6 31. Kxg2 Kg5 32. Ngf3+ Kxh6 33. Re8 Bg4 34. Rxg8 Bxh3+ 35. Kxh3 d4 36. Ng6 b3 37. Nfh4 b4 38. Nf8 d3 39. Nhg6 h4 40. Nxh4 d2 41. Nhg6 Kh5 42. Nh4 b2 43. Nhg6 b3 44. Nh4 b1=Q 45. Nfg6 Qd1 46. Re1 dxe1=Q 47. Nf8 Qg1 48. Nhg6 Qdf1# 0-1

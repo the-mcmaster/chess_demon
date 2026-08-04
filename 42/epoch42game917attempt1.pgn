@@ -1,0 +1,9 @@
+[Event "Epoch 42 Game 917 Attempt 1"]
+[Site "?"]
+[Date "????.??.??"]
+[Round "?"]
+[White "Generation 42"]
+[Black "Generation 42"]
+[Result "0-1"]
+
+1. f4 d5 2. a4 Nd7 3. Kf2 e5 4. Kg3 Ndf6 5. Kh4 exf4 6. e4 Nh5+ 7. Kxh5 Qe7 8. h4 Qf6 9. d4 dxe4 10. Nd2 Qh6# 0-1

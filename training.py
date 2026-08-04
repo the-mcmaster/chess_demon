@@ -42,6 +42,10 @@ One epoch:
 import random
 import os
 import sys
+import copy
+import queue
+import contextlib
+import concurrent.futures
 
 import chess
 import chess.pgn
@@ -159,72 +163,162 @@ def select_move_from_output(
     return legal_moves[chosen_idx]
 
 
+class ModelPool:
+    """
+    A pool of `pool_size` read-only replicas of a model, each bound to its
+    own CUDA stream, checked out by threads during self-play and returned
+    when a game finishes.
+
+    Why a dedicated stream per replica, not just per replica weights:
+    PyTorch funnels all CUDA kernel launches from every thread onto one
+    shared default stream per device unless told otherwise. A stream is a
+    FIFO queue of GPU work - kernels queued on the same stream still run
+    one at a time no matter how many host threads enqueued them. Giving
+    each replica its own stream lets the GPU scheduler genuinely overlap
+    work from different threads, which multiple model instances alone do
+    not provide (the weights are read-only during self-play, so multiple
+    threads could safely share a single instance - the instances here
+    exist to give each stream something to operate on, not to solve a
+    correctness problem).
+
+    On a non-CUDA device (device == "cpu"), streams aren't meaningful, so
+    replicas are handed out with stream=None and callers just run forward
+    passes normally - this also means pool_size on CPU only helps to the
+    extent the CPU has spare cores, unrelated to the CUDA-stream story.
+    """
+
+    def __init__(self, base_model: "ChessTransformer", pool_size: int, device: str):
+        self.device = device
+        self._pool: "queue.Queue" = queue.Queue()
+        is_cuda = device.startswith("cuda")
+        for _ in range(pool_size):
+            replica = copy.deepcopy(base_model).to(device)
+            replica.eval()  # disable dropout during self-play data generation
+            stream = torch.cuda.Stream(device=device) if is_cuda else None
+            self._pool.put((replica, stream))
+
+    @contextlib.contextmanager
+    def acquire(self):
+        """Block until a replica is free, yield (replica, stream), return
+        it to the pool when the caller is done."""
+        replica, stream = self._pool.get()
+        try:
+            yield replica, stream
+        finally:
+            self._pool.put((replica, stream))
+
+
+@contextlib.contextmanager
+def _acquire_pair(white_pool: ModelPool, black_pool: ModelPool):
+    """
+    Acquire one replica for white and one for black, for the duration of
+    a whole game. If white_pool and black_pool are the SAME pool (i.e.
+    self-play with one set of weights playing both sides), only a single
+    replica is checked out and used for both colors - no need to hold two
+    instances of identical weights for one game.
+    """
+    if white_pool is black_pool:
+        with white_pool.acquire() as (replica, stream):
+            yield replica, stream, replica, stream
+    else:
+        with white_pool.acquire() as (w_replica, w_stream):
+            with black_pool.acquire() as (b_replica, b_stream):
+                yield w_replica, w_stream, b_replica, b_stream
+
+
+def _run_on_replica(replica: "ChessTransformer", stream, input_tensor: torch.Tensor, board: chess.Board, temperature: float):
+    """
+    Run one move's worth of GPU work (the forward pass AND select_move_
+    from_output's per-legal-move indexing/softmax/sampling) on the given
+    replica's dedicated stream, then synchronize that stream before
+    returning - so the CPU-side result is safe to use immediately without
+    racing the GPU. If stream is None (CPU), just runs normally.
+    """
+    if stream is not None:
+        with torch.cuda.stream(stream):
+            with torch.no_grad():
+                policy_logits, _value = replica(input_tensor)
+            move = select_move_from_output(policy_logits[0], board, temperature=temperature)
+        stream.synchronize()
+        return move
+    else:
+        with torch.no_grad():
+            policy_logits, _value = replica(input_tensor)
+        return select_move_from_output(policy_logits[0], board, temperature=temperature)
+
+
+
 def play_game(
-    model_white: ChessTransformer,
-    model_black: ChessTransformer,
+    white_pool: ModelPool,
+    black_pool: ModelPool,
     device: str = "cpu",
     temperature: float = 1.0,
     **kwargs
 ):
     """
-    Play one full self-play game.
+    Play one full self-play game, using replicas checked out from
+    white_pool / black_pool for the entire game's duration (including
+    across move-cap retries - see ModelPool docstring for why replicas
+    exist and _acquire_pair for the same-pool self-play case).
 
     Returns:
         history: list of (input_tensor, mover_color) for every ply played
         outcome: dict mapping chess.WHITE / chess.BLACK -> result in {-1.0, 0.0, 1.0}
                     - 0.0 for both sides if the game results in a draw
     """
-    attempt = 0
-    while True:
-        attempt += 1
-        board = chess.Board()
-        history = []
+    with _acquire_pair(white_pool, black_pool) as (white_replica, white_stream, black_replica, black_stream):
+        attempt = 0
+        while True:
+            attempt += 1
+            board = chess.Board()
+            history = []
 
-        full_move_count = 0
-        while not board.is_game_over(claim_draw=True) and full_move_count < MAX_FULL_MOVES:
-            input_tensor = board_to_tensor(board).unsqueeze(0).to(device)
+            full_move_count = 0
+            while not board.is_game_over(claim_draw=True) and full_move_count < MAX_FULL_MOVES:
+                input_tensor = board_to_tensor(board).unsqueeze(0).to(device)
 
-            model = model_white if board.turn == chess.WHITE else model_black
-            with torch.no_grad():
-                policy_logits, _value = model(input_tensor)
+                if board.turn == chess.WHITE:
+                    replica, stream = white_replica, white_stream
+                else:
+                    replica, stream = black_replica, black_stream
 
-            move = select_move_from_output(policy_logits[0], board, temperature=temperature)
+                move = _run_on_replica(replica, stream, input_tensor, board, temperature)
 
-            history.append({
-                "tensor": input_tensor.squeeze(0).cpu(),
-                "mover": board.turn,
-                "board_fen": board.fen(),  # position BEFORE the move, for
-                                            # reconstructing legal moves /
-                                            # plane indices during training
-                "move_uci": move.uci(),
-            })
-            board.push(move)
+                history.append({
+                    "tensor": input_tensor.squeeze(0).cpu(),
+                    "mover": board.turn,
+                    "board_fen": board.fen(),  # position BEFORE the move, for
+                                                # reconstructing legal moves /
+                                                # plane indices during training
+                    "move_uci": move.uci(),
+                })
+                board.push(move)
 
-            if board.turn == chess.WHITE:
-                # a full move just completed (black just moved)
-                full_move_count += 1
+                if board.turn == chess.WHITE:
+                    # a full move just completed (black just moved)
+                    full_move_count += 1
 
-        game = chess.pgn.Game.from_board(board)
+            game = chess.pgn.Game.from_board(board)
 
-        game.headers["Event"] = f"Epoch {kwargs['Epoch']} Game {kwargs['Count']} Attempt {attempt}"
-        game.headers["White"] = kwargs["White"]
-        game.headers["Black"] = kwargs["Black"]
-        game.headers["Result"] = board.result()
+            game.headers["Event"] = f"Epoch {kwargs['Epoch']} Game {kwargs['Count']} Attempt {attempt}"
+            game.headers["White"] = kwargs["White"]
+            game.headers["Black"] = kwargs["Black"]
+            game.headers["Result"] = board.result()
 
-        os.makedirs(f"{kwargs['Epoch']}", exist_ok=True)
-        with open(f"{kwargs['Epoch']}/epoch{kwargs['Epoch']}game{kwargs['Count']}attempt{attempt}.pgn", "w", encoding="utf-8") as pgn_file:
-            pgn_file.write(str(game))
+            os.makedirs(f"{kwargs['Epoch']}", exist_ok=True)
+            with open(f"{kwargs['Epoch']}/epoch{kwargs['Epoch']}game{kwargs['Count']}attempt{attempt}.pgn", "w", encoding="utf-8") as pgn_file:
+                pgn_file.write(str(game))
 
-        if board.is_game_over(claim_draw=True):
-            if board.is_fifty_moves() or board.is_fivefold_repetition() or board.is_seventyfive_moves() or board.is_fifty_moves() or board.is_repetition():
-                result = "0-0"
+            if board.is_game_over(claim_draw=True):
+                if board.is_fifty_moves() or board.is_fivefold_repetition() or board.is_seventyfive_moves() or board.is_fifty_moves() or board.is_repetition():
+                    result = "0-0"
+                else:
+                    result = board.result(claim_draw=True)
             else:
-                result = board.result(claim_draw=True)
-        else:
-            # hit the 200-full-move cap without a natural conclusion
-            continue
+                # hit the 200-full-move cap without a natural conclusion
+                continue
 
-        break
+            break
 
     if result == "1-0":
         outcome = {chess.WHITE: 1.0, chess.BLACK: -1.0}
@@ -247,9 +341,11 @@ def play_epoch(
     games_per_epoch: int = 1024,
     train_batch_size: int = 256,
     temperature: float = 1.0,
+    threads: int = 1,
+    model_pool_size: int = None,
 ):
     if os.path.isdir(f"{model_white.epoch}"):
-        print(f"Removing old games path at `{model_white.epoch}/`")
+        print_info(f"Removing old games path at `{model_white.epoch}/`")
         # topdown=False is critical: it clears files/subfolders before the parent folder
         for root, dirs, files in os.walk(f"{model_white.epoch}", topdown=False):
             # 1. Delete all individual files
@@ -263,31 +359,70 @@ def play_epoch(
         # 3. Delete the top-level directory itself
         os.rmdir(f"{model_white.epoch}")
     """
-    Play games_per_epoch self-play games, then train each model on the
-    resulting occurrences (see module docstring for the value + policy
-    loss this applies).
+    Play games_per_epoch self-play games (up to `threads` games running
+    concurrently), then train each model on the resulting occurrences
+    (see module docstring for the value + policy loss this applies).
+
+    Parallelism: for the self-play phase only, `model_pool_size` replicas
+    of model_white (and, if model_black is a different model, model_black
+    too) are created, each bound to its own CUDA stream - see ModelPool's
+    docstring for why. model_pool_size defaults to `threads`, so by
+    default every concurrently-running game gets its own replica; passing
+    a smaller model_pool_size makes extra threads queue for a free replica
+    (still correct, just more contention). The replica pools are
+    discarded once self-play finishes - training afterward uses
+    model_white/model_black directly, sequentially, exactly as before.
+    threads=1 (with the default pool size) preserves the original
+    fully-sequential behavior.
     """
+    if model_pool_size is None:
+        model_pool_size = threads
+
+    same_weights = model_white is model_black
+    white_pool = ModelPool(model_white, model_pool_size, device)
+    black_pool = white_pool if same_weights else ModelPool(model_black, model_pool_size, device)
+
     # per-occurrence, NOT deduplicated - see module docstring for why
     all_occurrences = {chess.WHITE: [], chess.BLACK: []}
 
     summary = {'white': 0, 'black': 0, 'draw': 0, 'attempts': 0, 'states': 0}
-    for game_idx in range(games_per_epoch):
-        history, outcome, attempts = play_game(model_white, model_black, device=device, temperature=temperature, Epoch=epoch, White=f"Generation {model_white.epoch}", Black=f"Generation {model_black.epoch}", Count=game_idx + 1)
-        for entry in history:
-            mover = entry["mover"]
-            all_occurrences[mover].append({
-                "tensor": entry["tensor"],
-                "board_fen": entry["board_fen"],
-                "move_uci": entry["move_uci"],
-                "outcome": outcome[mover],
-            })
 
-        if outcome[chess.WHITE] == 1: summary['white'] += 1
-        elif outcome[chess.WHITE] == -1: summary['black'] += 1
-        else: summary['draw'] += 1
-        summary['attempts'] += attempts
+    def run_one_game(game_idx):
+        return play_game(
+            white_pool, black_pool, device=device, temperature=temperature,
+            Epoch=epoch, White=f"Generation {model_white.epoch}",
+            Black=f"Generation {model_black.epoch}", Count=game_idx + 1,
+        )
+
+    with concurrent.futures.ThreadPoolExecutor(max_workers=threads) as executor:
+        futures = [executor.submit(run_one_game, game_idx) for game_idx in range(games_per_epoch)]
+
+        for future in concurrent.futures.as_completed(futures):
+            history, outcome, attempts = future.result()
+
+            for entry in history:
+                mover = entry["mover"]
+                all_occurrences[mover].append({
+                    "tensor": entry["tensor"],
+                    "board_fen": entry["board_fen"],
+                    "move_uci": entry["move_uci"],
+                    "outcome": outcome[mover],
+                })
+
+            if outcome[chess.WHITE] == 1: summary['white'] += 1
+            elif outcome[chess.WHITE] == -1: summary['black'] += 1
+            else: summary['draw'] += 1
+            summary['attempts'] += attempts
 
     summary['states'] = len(all_occurrences[chess.WHITE]) + len(all_occurrences[chess.BLACK])
+
+    # self-play is done - drop the replica pools before training, so the
+    # (potentially large) training batches aren't competing with them for
+    # VRAM. The caching allocator would likely reuse this memory anyway,
+    # but empty_cache() makes it explicit rather than relying on that.
+    del white_pool, black_pool
+    if device.startswith("cuda"):
+        torch.cuda.empty_cache()
 
     average_loss_white_model = train_on_occurrences(
         model_white, all_occurrences[chess.WHITE], optimizer, device=device, train_batch_size=train_batch_size
@@ -372,10 +507,14 @@ def train_on_occurrences(model, occurrences, optimizer: torch.optim.Optimizer, d
 
     return total_loss / max(num_batches, 1)
 
+from datetime import datetime
+def print_info(*args):
+    time_str = str(datetime.now().strftime("%H:%M:%S"))
+    print(f"{time_str:<12}", *args)
 
 if __name__ == "__main__":
     device = "cuda" if torch.cuda.is_available() else "cpu"
-    print(f"Using device `{device}`")
+    print_info(f"Using device `{device}`")
     model = ChessTransformer(0).to(device)
     optimizer = torch.optim.Adam(model.parameters(), lr=1e-4)
     
@@ -385,34 +524,34 @@ if __name__ == "__main__":
         guess_epoch += 1
     if len(sys.argv) >= 2:
         start_epoch = int(sys.argv[1])
-        print(f"Attempting to load at Epoch {start_epoch}")
+        print_info(f"Attempting to load at Epoch {start_epoch}")
         model.load_state_dict(torch.load(f"model{start_epoch}.pth", weights_only=True))
         model.epoch = start_epoch
-        print(f"Successfully loaded Epoch {start_epoch}")
+        print_info(f"Successfully loaded Epoch {start_epoch}")
     else:
-        print(f"No model number provided. Starting at Epoch {guess_epoch}")
+        print_info(f"No model number provided. Starting at Epoch {guess_epoch}")
         start_epoch = guess_epoch - 1
 
     def print_summary(summary):
-        print(f"\tEpoch Game Summary")
-        print(f"\tAttempts:     {summary['attempts']}")
-        print(f"\tBoard States: {summary['states']}")
-        print(f"\tWhite Wins:   {summary['white']}")
-        print(f"\tBlack Wins:   {summary['black']}")
-        print(f"\tDraws:        {summary['draw']}")
+        print_info(f"\tEpoch Game Summary")
+        print_info(f"\tAttempts:     {summary['attempts']}")
+        print_info(f"\tBoard States: {summary['states']}")
+        print_info(f"\tWhite Wins:   {summary['white']}")
+        print_info(f"\tBlack Wins:   {summary['black']}")
+        print_info(f"\tDraws:        {summary['draw']}")
 
-    for epoch in range(0 if not start_epoch else start_epoch + 1, 20):
+    for epoch in range(0 if not start_epoch else start_epoch + 1, 200):
         model.epoch = epoch
 
         print()
-        print(f"Beginning Epoch {epoch}")
+        print_info(f"Beginning Epoch {epoch}")
         
         games_this_epoch = min(1024, 64 * (2**epoch))
         avg_loss_white, avg_loss_black, summary = play_epoch(
-            model, model, optimizer, epoch, device=device, games_per_epoch=games_this_epoch, train_batch_size=games_this_epoch // 4
+            model, model, optimizer, epoch, device=device, games_per_epoch=games_this_epoch, train_batch_size=games_this_epoch // 4, threads=8
         )
         
-        print(f"Epoch {epoch} complete. Average value loss white: {avg_loss_white:.4f} Average value loss black: {avg_loss_black:.4f}")
+        print_info(f"Epoch {epoch} complete. Average value loss white: {avg_loss_white:.4f} Average value loss black: {avg_loss_black:.4f}")
         print_summary(summary)
-        print(f"Saving Epoch Model as `model{epoch}.pth`")
+        print_info(f"Saving Epoch Model as `model{epoch}.pth`")
         torch.save(model.state_dict(), f"model{epoch}.pth")

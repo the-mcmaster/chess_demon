@@ -1,0 +1,9 @@
+[Event "Epoch 32 Game 401 Attempt 1"]
+[Site "?"]
+[Date "????.??.??"]
+[Round "?"]
+[White "Generation 32"]
+[Black "Generation 32"]
+[Result "0-1"]
+
+1. d4 a5 2. Bd2 c5 3. Be3 cxd4 4. Nd2 dxe3 5. Ndf3 exf2+ 6. Kxf2 f6 7. Nh4 Kf7 8. Kg3 b6 9. Rc1 Ra7 10. Kg4 g5 11. Kh5 Rc7 12. Qd2 gxh4 13. Re1 h3 14. e4 Bg7 15. Qf2 Bh6 16. Qg3 Qf8 17. c4 Rc5+ 18. e5 Rxc4 19. Re2 Qg7 20. Qh4 Rc3 21. bxc3 Qg6# 0-1

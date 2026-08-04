@@ -1,0 +1,9 @@
+[Event "Epoch 40 Game 879 Attempt 1"]
+[Site "?"]
+[Date "????.??.??"]
+[Round "?"]
+[White "Generation 40"]
+[Black "Generation 40"]
+[Result "0-1"]
+
+1. c4 f6 2. h4 c5 3. b4 a5 4. a4 Kf7 5. Ra3 Kg6 6. Rc3 Kh5 7. Re3 Ra6 8. Rg3 Rc6 9. Rhh3 e5 10. Rg5+ fxg5 11. d4 gxh4 12. Nd2 axb4 13. Ndf3 g5 14. Nxh4 cxd4 15. Bd2 Re6 16. Be3 dxe3 17. f4 gxh4 18. Qd3 Rg6 19. Qe4 Bg7 20. g4+ Rxg4 21. Qf5+ Qg5 22. Qg6+ Kxg6 23. fxg5 Bh6 24. Bg2 Rg3 25. gxh6 Kh5 26. a5 b5 27. axb6 d5 28. cxd5 Nd7 29. b7 Ndf6 30. bxc8=Q Rxg2 31. Qe8+ Kg5 32. Qxg8+ Kf5 33. d6 Nh5 34. Rxh4 Rxg1+ 35. Qxg1 e4 36. Qg3 b3 37. Qg5+ Ke6 38. Qg7 Kf5 39. Qxh8 b2 40. Qg8 b1=Q# 0-1

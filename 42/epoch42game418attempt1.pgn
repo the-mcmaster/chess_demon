@@ -1,0 +1,9 @@
+[Event "Epoch 42 Game 418 Attempt 1"]
+[Site "?"]
+[Date "????.??.??"]
+[Round "?"]
+[White "Generation 42"]
+[Black "Generation 42"]
+[Result "0-1"]
+
+1. d4 h5 2. Nd2 g5 3. Ndf3 a5 4. Nh4 gxh4 5. Bd2 Bg7 6. Be3 d5 7. Rc1 Rh6 8. Bf4 Nd7 9. Qd3 Ndf6 10. Qf3 c5 11. g4 cxd4 12. Bg2 Qd6 13. a4 Bd7 14. Qh3 Rc8 15. Bg5 Be6 16. gxh5 Qe5 17. Bxh6 Qg5 18. e3 Bf5 19. c4 e5 20. b3 Nxh5 21. Rc3 Bg4 22. cxd5 Bh8 23. Rc5 Bxh3 24. Rc7 dxe3 25. f4 b5 26. Bxh3 exf4 27. Re7+ Kxe7 28. axb5 Re8 29. b4 Qxh6 30. d6+ Kf6 31. Ke2 Kg5 32. b6 axb4 33. Kf3 f6 34. d7 e2 35. dxe8=Q b3 36. Qxg8+ Bg7 37. Kg2 b2 38. Qh7 Bh8 39. b7 Ng3 40. Nf3+ Kh5 41. Nxh4 b1=Q 42. b8=Q Qd1 43. Qd8 Qf1+ 44. Rxf1 exf1=Q# 0-1

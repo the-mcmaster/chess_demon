@@ -1,0 +1,9 @@
+[Event "Epoch 42 Game 726 Attempt 1"]
+[Site "?"]
+[Date "????.??.??"]
+[Round "?"]
+[White "Generation 42"]
+[Black "Generation 42"]
+[Result "0-1"]
+
+1. e4 b5 2. g4 h5 3. gxh5 f5 4. a4 c5 5. c3 g5 6. Bg2 Kf7 7. axb5 d5 8. Bh3 Bd7 9. b4 dxe4 10. Qe2 a5 11. bxc5 e5 12. f4 Qe7 13. Qf3 exf3 14. Kf2 Bg7 15. fxg5 Rh6 16. gxh6 Ra6 17. Kg3 Rc6 18. bxc6 Be6 19. Na3 Nd7 20. Nc4 Ndf6 21. Kh4 Bxh6 22. Nxe5+ Ke8 23. Ng6 Nxh5+ 24. Kxh5 Qf6 25. Ra3 Qg5# 0-1

@@ -4,6 +4,6 @@
 [Round "?"]
 [White "Generation 4"]
 [Black "Generation 4"]
-[Result "1-0"]
+[Result "*"]
 
-1. h4 f5 2. e4 fxe4 3. b4 d6 4. Be2 Kf7 5. Nf3 Ke8 6. Bb2 Kd7 7. Qc1 d5 8. Ba3 e3 9. Nc3 Na6 10. g3 h6 11. Nxd5 Nb8 12. Qb2 Nf6 13. Kf1 Rh7 14. Rh3 h5 15. Nxe3 Ne8 16. g4 Rh6 17. b5 e5 18. b6 Bc5 19. Bxc5 Kc6 20. Nd5 Rg6 21. Nb4+ Kxc5 22. Rd1 Na6 23. Nxe5 Bf5 24. a3 hxg4 25. Bd3 Qd5 26. Nxg4 Rc8 27. Be2 Qg2+ 28. Kxg2 Re6 29. Qd4+ Kxd4 30. Kg1 Be4 31. Rd3+ Kc5 32. Ne3 Rf6 33. Bf3 Re6 34. Bh5 g5 35. Nc4 Re7 36. f3 Nb8 37. a4 a5 38. Na6+ Kxc4 39. Rd4+ Kxd4 40. Bg6 c6 41. h5 bxa6 42. d3 Bxd3 43. Kh2 Kd5 44. b7 g4 45. h6 Kc4 46. h7 Rcc7 47. h8=Q Bf5 48. Bxe8 Re3 49. f4 Rh3+ 50. Kg1 Nd7 51. Qd4# 1-0
+1. h4 f5 2. Nf3 Kf7 3. b4 d5 4. Ba3 Qd7 5. Nh2 Qc6 6. c4 Qb5 7. Qb3 Qxc4 8. Qa4 Qxa2 9. Qb5 Bd7 10. Qc6 Qxb1+ 11. Rxb1 Bxc6 12. Rc1 Kg6 13. Rxc6+ Kh5 14. Rc5 Kg6 15. g4 fxg4 16. f4 Kh5 17. Bg2 g5 18. hxg5 a5 19. Bf1 Kg6 20. Kd1 Bg7 21. Bg2 Be5 22. Be4+ Kg7 23. Nf1 Bc3 24. Bd3 Ba1 25. Rg1 Ra6 26. Rg3 Kf8 27. Bb5 axb4 28. Rc4 Rd6 29. Re4 Rg6 30. Kc2 dxe4 31. Bc6 bxc6 32. Bxb4 Kg7 33. Bc5 Rxg5 34. Ba7 Kf6 35. Bxb8 Ra5 36. Kb3 Bd4 37. Kc4 Bb2 38. Rb3 Kf7 39. Rxb2 Kg6 40. Kb3 Kf7 41. Kc3 Rg5 42. Kd4 h5 43. Ba7 Kf8 44. fxg5 Kg7 45. Ke5 Kf8 46. Kxe4 Kg7 47. Kf5 Kf8 48. Bb8 Kg7 49. d4 Kf8 50. Ba7 Kg7 51. Rb5 cxb5 52. Bb8 c5 53. Ke6 cxd4 54. Ba7 Nf6 55. Bb8 Nd7 56. Ba7 Nb8 57. Bxb8 Re8 58. Kd5 e5 59. Bc7 Rh8 60. Bb8 Rxb8 61. Ke6 Re8+ 62. Kd7 Kf8 63. Kc6 Kg7 64. Kd7 Re6 65. e4 Kg8 66. Kc8 Rh6 67. Kb7 Rh8 68. Kc8 Kf7+ 69. Kb7 Kg6 70. Ka6 Kf7 71. Kb7 Kf8 72. Ka8 Kg7+ 73. Ka7 Rc8 74. Ka6 Kg8 75. Ka5 Re8 76. Kb6 Rb8+ 77. Kc6 Re8 78. Kd7 Kh7 79. Kxe8 Kg6 80. Kd7 Kf7 81. Kc6 Kg6 82. Kd7 Kf7 83. Kd6 Kg6 *

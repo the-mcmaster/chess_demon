@@ -1,0 +1,9 @@
+[Event "Epoch 15 Game 456 Attempt 1"]
+[Site "?"]
+[Date "????.??.??"]
+[Round "?"]
+[White "Generation 15"]
+[Black "Generation 15"]
+[Result "0-1"]
+
+1. c4 g5 2. h3 c6 3. g4 b5 4. e4 e5 5. Ke2 d5 6. d4 Qd6 7. f4 a5 8. Qd3 Ra6 9. a3 f5 10. Rh2 h5 11. h4 Ke7 12. b4 Rh7 13. Rg2 axb4 14. Qg3 Ra4 15. Ke3 Bg7 16. fxg5 c5 17. Bd2 b3 18. exf5 Nc6 19. Qf3 b2 20. g6 Ra5 21. Ra2 Bd7 22. g5 Nb8 23. Qf4 Rxa3+ 24. Rxa3 Bh6 25. Rg3 e4 26. Rg4 Rg7 27. Ra5 Qxf4+ 28. Kxf4 Rxg6 29. f6+ Ke6 30. Ra7 Rxg5 31. Rb7 cxd4 32. c5 d3 33. Rxg5 b4 34. f7 b3 35. fxg8=Q+ Ke7 36. Bg2 Kf6 37. Be3 d2 38. Rxb8 d4 39. Re8 d1=Q 40. Bh3 d3 41. c6 Be6 42. Nc3 Bf5 43. Nb1 Qf1+ 44. Bf2 Bg4 45. c7 e3 46. c8=Q d2 47. Nc3 Bxh3 48. Nb1 e2 49. Qxh3 d1=Q 50. Qf8+ Bxf8 51. Rg7 Bxg7 52. Qg3 e1=Q 53. Qg5+ Kf7 54. Qxg7+ Kxg7 55. Nh3 Qd6+ 56. Kf5 Qc6 57. Ng1 Qcc4 58. Nh3 Qc2+ 59. Kf4 Qcd1 60. Ng1 Qb5 61. Rd8 Kg6 62. Nc3 Qb4+ 63. Rd4 Qbe7 64. Nb1 Q7e5# 0-1

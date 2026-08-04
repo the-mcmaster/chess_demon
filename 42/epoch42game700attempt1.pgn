@@ -1,0 +1,9 @@
+[Event "Epoch 42 Game 700 Attempt 1"]
+[Site "?"]
+[Date "????.??.??"]
+[Round "?"]
+[White "Generation 42"]
+[Black "Generation 42"]
+[Result "0-1"]
+
+1. f4 a5 2. Kf2 f5 3. e4 Kf7 4. Kg3 c5 5. Kh4 h5 6. exf5 b5 7. a4 e5+ 8. f6 Ra6 9. Qe2 exf4 10. Qf3 Rc6 11. axb5 Re6 12. Qh3 Qe7 13. b6 Re4 14. b4 Rh6 15. bxc5 Kg6 16. d4 d5 17. Nd2 Nd7 18. Ndf3 Ndxf6 19. g4 fxg3+ 20. Bf4 Bd7 21. Rc1 Be6 22. b7 gxh2 23. Re1 Bf5 24. Re3 Rxe3 25. Bg5 Re1 26. Bg2 Bg4 27. c4 Rxg1 28. cxd5 Qe5 29. Bxh6 Qe3 30. b8=Q gxh6 31. Qd8 Bxh3 32. Bxh3 Bg7 33. Qf8 Qf2# 0-1

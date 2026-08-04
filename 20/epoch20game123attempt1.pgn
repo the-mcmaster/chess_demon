@@ -1,0 +1,9 @@
+[Event "Epoch 20 Game 123 Attempt 1"]
+[Site "?"]
+[Date "????.??.??"]
+[Round "?"]
+[White "Generation 20"]
+[Black "Generation 20"]
+[Result "0-1"]
+
+1. g3 h5 2. e3 h4 3. Ke2 h3 4. c4 d6 5. a3 Nd7 6. c5 Ndf6 7. b3 Nh5 8. Kf3 Rh7 9. a4 e6 10. cxd6 cxd6 11. Kg4 Rh6 12. f3 d5 13. d4 Ke7 14. Nd2 Kf6 15. Ra2 a6 16. Ra3 e5+ 17. Kh4 e4 18. Bg2 Kf5+ 19. Kxh3 Ra7 20. b4 Bd7 21. b5 a5 22. Qf1 Qe7 23. Bb2 Be6 24. Qe1 Rg6 25. Qf2 exf3 26. Ndxf3 Ra6 27. Nh4+ Kg5+ 28. g4 Qf6 29. b6 Qf5 30. Qg3 Qxg4+ 31. Qxg4+ Bxg4# 0-1

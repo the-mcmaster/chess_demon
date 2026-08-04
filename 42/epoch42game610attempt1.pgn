@@ -1,0 +1,9 @@
+[Event "Epoch 42 Game 610 Attempt 1"]
+[Site "?"]
+[Date "????.??.??"]
+[Round "?"]
+[White "Generation 42"]
+[Black "Generation 42"]
+[Result "0-1"]
+
+1. g4 c5 2. c4 a5 3. Bg2 Ra6 4. a4 e5 5. Bh3 f5 6. e4 Qe7 7. Qe2 fxg4 8. Qf3 b5 9. Qf5 Rc6 10. Qg6+ Rxg6 11. axb5 gxh3 12. f4 d6 13. Kf2 Qf6 14. Ra3 exf4 15. Rc3 Nd7 16. Re3 Qg5 17. Rg3 h5 18. d3 Ndf6 19. b4 Bd7 20. Nd2 Kf7 21. Ndf3 axb4 22. Nh4 Be6 23. Bd2 Bf5 24. Be3 Bg4 25. Bxf4 Rhh6 26. Bxg5 Rxg5 27. Ngf3 g6 28. Kg1 Bg7 29. Rxg4 Bh8 30. e5 dxe5 31. d4 cxd4 32. Nxg6 Kxg6 33. Nh4+ Kh7 34. Rxg5 d3 35. Rg7+ Kxg7 36. Ng6 Kxg6 37. b6 Kh7 38. b7 b3 39. b8=Q e4 40. Qd8 b2 41. Qf8 h4 42. Qg7+ Bxg7 43. c5 Nh5 44. c6 Bh8 45. c7 Ng3 46. c8=Q Rh5 47. Qe8 Nf1 48. Qxg8+ Kh6 49. Qh7+ Kg5 50. Qxh8 e3 51. Qe8 e2 52. Qg8+ Kh6 53. Qh7+ Kg5 54. Qh8 e1=Q 55. Qe8 Kh6 56. Qg8 Qf2+ 57. Kxf2 b1=Q 58. Qh7+ Kg5 59. Qh8 Qd1 60. Kg1 Qe2 61. Qg8+ Kh6 62. Qh7+ Kg5 63. Qh8 Qg2# 0-1

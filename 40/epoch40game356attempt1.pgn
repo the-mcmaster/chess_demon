@@ -1,0 +1,9 @@
+[Event "Epoch 40 Game 356 Attempt 1"]
+[Site "?"]
+[Date "????.??.??"]
+[Round "?"]
+[White "Generation 40"]
+[Black "Generation 40"]
+[Result "0-1"]
+
+1. b3 b5 2. d4 c5 3. Nd2 h5 4. Ndf3 cxd4 5. Nh4 d5 6. e4 Nd7 7. Bd2 Ndf6 8. Qe2 dxe4 9. Rc1 Bd7 10. Qf3 Rc8 11. Be3 dxe3 12. Qh3 g5 13. f4 Be6 14. fxg5 Bg7 15. g4 Rc6 16. Bg2 Bh6 17. Ke2 a5 18. Re1 Bf5 19. gxh6 Bxg4+ 20. Kxe3 Rxh6 21. Kf4 Re6 22. Kg5 Bxh3 23. Bxh3 Qd6 24. c4 bxc4 25. bxc4 Qe5+ 26. Nf5 Qf4+ 27. Kxf4 a4 28. Nxh6 Re5 29. Rd1 Rg5 30. Rf1 e5+ 31. Kxg5 e3 32. Rf5 h4 33. c5 Nh5 34. a3 f6+ 35. Rxf6 Ke7 36. Rf8 e2 37. Kg6 e1=Q 38. Kh7 Qxg1 39. c6 e4 40. c7 Qg7# 0-1
