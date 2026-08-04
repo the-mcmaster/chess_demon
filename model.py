@@ -60,7 +60,8 @@ PIECE_TYPES = [
 
 NUM_INPUT_CHANNELS = 19  # 12 piece planes + 1 en passant + 6 castling
 NUM_POSITIONAL_CHANNELS = 2
-D_MODEL = NUM_INPUT_CHANNELS + NUM_POSITIONAL_CHANNELS  # 21, per-square token length
+D_RAW_FEATURES = NUM_INPUT_CHANNELS + NUM_POSITIONAL_CHANNELS  # 21, per-square token length
+D_EMBEDDING = 256
 NUM_POLICY_CHANNELS = 73
 
 
@@ -113,10 +114,10 @@ class ChessTransformer(nn.Module):
     def __init__(
         self,
         epoch: int,
-        d_model: int = D_MODEL,
-        nhead: int = 3,
+        d_model: int = D_EMBEDDING,
+        nhead: int = 8,
         num_layers: int = 12,
-        dim_feedforward: int = 128,
+        dim_feedforward: int = D_EMBEDDING,
         dropout: float = 0.1,
     ):
         super().__init__()
@@ -132,6 +133,11 @@ class ChessTransformer(nn.Module):
                 coords[1, row, col] = col / 7.0
         self.register_buffer("positional_encoding", coords)
 
+        self.embedding = nn.Sequential(
+            nn.Linear(D_RAW_FEATURES, d_model),
+            nn.ReLU(),
+        )
+
         encoder_layer = nn.TransformerEncoderLayer(
             d_model=d_model,
             nhead=nhead,
@@ -145,8 +151,6 @@ class ChessTransformer(nn.Module):
 
         self.value_head = nn.Sequential(
             nn.Linear(d_model * 64, 32),
-            nn.ReLU(),
-            nn.Linear(32, 32),
             nn.ReLU(),
             nn.Linear(32, 1),
             nn.Tanh(),
@@ -169,12 +173,14 @@ class ChessTransformer(nn.Module):
         # matching board_to_tensor's [channel, row, col] layout.
         tokens = x.flatten(2).permute(0, 2, 1)  # (batch, 64, 21)
 
-        encoded = self.encoder(tokens)  # (batch, 64, 21)
+        embedded = self.embedding(tokens) # (batch, 64, 256)
+
+        encoded = self.encoder(embedded)  # (batch, 64, 256)
 
         policy_logits = self.policy_head(encoded)          # (batch, 64, 73)
         policy_logits = policy_logits.view(batch, 8, 8, NUM_POLICY_CHANNELS)
 
-        encoded_flat = encoded.flatten(1)  # (batch, 64 * 21)
+        encoded_flat = encoded.flatten(1)  # (batch, 64 * 256)
         value = self.value_head(encoded_flat).squeeze(-1)  # (batch,)
 
         return policy_logits, value

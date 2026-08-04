@@ -7,15 +7,36 @@ One epoch:
     - play games_per_epoch self-play games (full games, model_white plays
       the white side, model_black plays the black side - the same model
       instance can be passed for both)
-    - a game ends automatically after 200 full moves (400 plies) if it
-      hasn't already ended naturally
-    - every position/move played in every game is recorded, tagged with
-      which side made that move
-    - after all games, each recorded position is labeled with the average
-      outcome seen for that exact position (from the mover's perspective:
-      1.0 win, -1.0 loss, 0.0 draw, per the outcome dict below)
-    - each model's value head is trained to regress (via tanh output, so
-      targets live in [-1, 1]) toward that average
+    - a game ends automatically after 200 full moves (400 plies); if it
+      hasn't naturally ended by then, the game is discarded and retried
+      rather than counted (see play_game)
+    - every position/move played in every game is recorded as its own
+      occurrence: (board tensor, the move actually chosen there, and that
+      game's final outcome for the mover). Unlike an earlier version of
+      this file, occurrences are NOT deduplicated/averaged by position -
+      the policy loss needs to know exactly which move was taken at each
+      occurrence and what that specific game's outcome was, so collapsing
+      repeat positions into one averaged target would throw away that
+      pairing. (Training the value head on individual occurrences instead
+      of pre-averaged targets is statistically equivalent in expectation -
+      MSE over repeated samples converges to the same place as MSE over
+      their pre-averaged mean - so this isn't a behavior regression for
+      the value head, just a necessary simplification for the policy head.)
+    - both heads are trained together, in one combined loss per batch:
+        * value loss: MSE between the value head's prediction and the
+          occurrence's actual game outcome (tanh output, so targets and
+          predictions both live in [-1, 1])
+        * policy loss: advantage-weighted negative log-likelihood of the
+          move that was actually played, i.e. basic actor-critic /
+          REINFORCE-with-baseline. The "advantage" is
+          (actual outcome - value head's own prediction, detached) - how
+          much better or worse the move did than the position was already
+          expected to be worth. Moves that outperformed their baseline get
+          reinforced (higher probability); moves that underperformed get
+          discouraged.
+      Both losses are summed and backpropagated in a single .backward()
+      call, so the shared transformer trunk gets gradient from both
+      objectives at once.
 """
 
 import random
@@ -169,7 +190,14 @@ def play_game(
 
             move = select_move_from_output(policy_logits[0], board, temperature=temperature)
 
-            history.append((input_tensor.squeeze(0).cpu(), board.turn))
+            history.append({
+                "tensor": input_tensor.squeeze(0).cpu(),
+                "mover": board.turn,
+                "board_fen": board.fen(),  # position BEFORE the move, for
+                                            # reconstructing legal moves /
+                                            # plane indices during training
+                "move_uci": move.uci(),
+            })
             board.push(move)
 
             if board.turn == chess.WHITE:
@@ -178,7 +206,7 @@ def play_game(
 
         game = chess.pgn.Game.from_board(board)
 
-        game.headers["Event"] = f"Epoch {epoch} Game {kwargs['Count']} Attempt {attempt}"
+        game.headers["Event"] = f"Epoch {kwargs['Epoch']} Game {kwargs['Count']} Attempt {attempt}"
         game.headers["White"] = kwargs["White"]
         game.headers["Black"] = kwargs["Black"]
         game.headers["Result"] = board.result()
@@ -235,66 +263,107 @@ def play_epoch(
         # 3. Delete the top-level directory itself
         os.rmdir(f"{model_white.epoch}")
     """
-    Play games_per_epoch self-play games, then train each model's value
-    head on the resulting (position, average outcome) pairs.
+    Play games_per_epoch self-play games, then train each model on the
+    resulting occurrences (see module docstring for the value + policy
+    loss this applies).
     """
-    # keyed by the raw bytes of the position tensor, since torch.Tensor
-    # isn't hashable and can't be used as a dict key directly
-    all_position_results = {chess.WHITE: {}, chess.BLACK: {}}
+    # per-occurrence, NOT deduplicated - see module docstring for why
+    all_occurrences = {chess.WHITE: [], chess.BLACK: []}
 
     summary = {'white': 0, 'black': 0, 'draw': 0, 'attempts': 0, 'states': 0}
     for game_idx in range(games_per_epoch):
         history, outcome, attempts = play_game(model_white, model_black, device=device, temperature=temperature, Epoch=epoch, White=f"Generation {model_white.epoch}", Black=f"Generation {model_black.epoch}", Count=game_idx + 1)
-        for position_tensor, mover_color in history:
-            key = position_tensor.numpy().tobytes()
-            entry = all_position_results[mover_color].setdefault(
-                key, {"tensor": position_tensor, "results": []}
-            )
-            entry["results"].append(outcome[mover_color])
-        
+        for entry in history:
+            mover = entry["mover"]
+            all_occurrences[mover].append({
+                "tensor": entry["tensor"],
+                "board_fen": entry["board_fen"],
+                "move_uci": entry["move_uci"],
+                "outcome": outcome[mover],
+            })
+
         if outcome[chess.WHITE] == 1: summary['white'] += 1
         elif outcome[chess.WHITE] == -1: summary['black'] += 1
         else: summary['draw'] += 1
         summary['attempts'] += attempts
-        summary['states'] += len(all_position_results[chess.WHITE].keys())
-        summary['states'] += len(all_position_results[chess.BLACK].keys())
 
-    average_loss_white_model = eval_positions(
-        model_white, all_position_results[chess.WHITE], device=device, train_batch_size=train_batch_size
+    summary['states'] = len(all_occurrences[chess.WHITE]) + len(all_occurrences[chess.BLACK])
+
+    average_loss_white_model = train_on_occurrences(
+        model_white, all_occurrences[chess.WHITE], optimizer, device=device, train_batch_size=train_batch_size
     )
-    average_loss_black_model = eval_positions(
-        model_black, all_position_results[chess.BLACK], device=device, train_batch_size=train_batch_size
+    average_loss_black_model = train_on_occurrences(
+        model_black, all_occurrences[chess.BLACK], optimizer, device=device, train_batch_size=train_batch_size
     )
 
     return (average_loss_white_model, average_loss_black_model, summary)
 
 
-def eval_positions(model, position_entries, device: str = "cpu", train_batch_size: int = 256):
-    model.eval()
+def train_on_occurrences(model, occurrences, optimizer: torch.optim.Optimizer, device: str = "cpu", train_batch_size: int = 256):
+    """
+    Train `model` on a list of occurrence dicts (tensor, board_fen,
+    move_uci, outcome), combining:
+        - value loss: MSE(value_pred, outcome)
+        - policy loss: advantage-weighted NLL of the move actually chosen,
+          using the value head's own (detached) prediction as the baseline
 
-    all_tensors = []
-    all_targets = []
-    for entry in position_entries.values():
-        all_tensors.append(entry["tensor"])
-        results = entry["results"]
-        all_targets.append(sum(results) / len(results))
-
-    data = torch.stack(all_tensors)                            # (N, 19, 8, 8)
-    targets = torch.tensor(all_targets, dtype=torch.float32)   # (N,)
+    Both losses are backpropagated together per batch. Note the per-move
+    policy loss requires reconstructing each occurrence's legal-move list
+    from its stored FEN and re-running move_to_plane_index over it, so
+    this is noticeably more expensive per batch than plain value-only
+    training was - if that becomes a bottleneck on CPU, reducing
+    train_batch_size or games_per_epoch is the easiest lever.
+    """
+    if not occurrences:
+        return 0.0
 
     model.train()
     total_loss = 0.0
     num_batches = 0
 
-    perm = torch.randperm(data.shape[0])
-    for start in range(0, data.shape[0], train_batch_size):
-        idx = perm[start:start + train_batch_size]
-        batch_x = data[idx].to(device)
-        batch_y = targets[idx].to(device)
+    indices = list(range(len(occurrences)))
+    random.shuffle(indices)
+
+    for start in range(0, len(indices), train_batch_size):
+        batch_idx = indices[start:start + train_batch_size]
+        batch = [occurrences[i] for i in batch_idx]
+
+        batch_x = torch.stack([o["tensor"] for o in batch]).to(device)
+        batch_y = torch.tensor([o["outcome"] for o in batch], dtype=torch.float32, device=device)
 
         optimizer.zero_grad()
-        _policy_logits, value_preds = model(batch_x)
-        loss = F.mse_loss(value_preds, batch_y)
+        policy_logits, value_preds = model(batch_x)  # (B, 8, 8, 73), (B,)
+
+        value_loss = F.mse_loss(value_preds, batch_y)
+
+        # advantage: how much better/worse the actual outcome was than the
+        # value head already expected. Detached so this only acts as a
+        # fixed per-sample weight for the policy loss, not a second
+        # gradient path back through the value head.
+        advantages = batch_y - value_preds.detach()
+
+        policy_losses = []
+        for i, occurrence in enumerate(batch):
+            board = chess.Board(occurrence["board_fen"])
+            mover = board.turn
+            legal_moves = list(board.legal_moves)
+
+            move_logits = []
+            chosen_idx = None
+            for j, mv in enumerate(legal_moves):
+                from_row, from_col = _canonical_rc(mv.from_square, mover)
+                plane_idx = move_to_plane_index(mv, board)
+                move_logits.append(policy_logits[i, from_row, from_col, plane_idx])
+                if mv.uci() == occurrence["move_uci"]:
+                    chosen_idx = j
+
+            move_logits = torch.stack(move_logits)
+            log_probs = F.log_softmax(move_logits, dim=0)
+            policy_losses.append(-log_probs[chosen_idx] * advantages[i])
+
+        policy_loss = torch.stack(policy_losses).mean()
+
+        loss = value_loss + policy_loss
         loss.backward()
         optimizer.step()
 
