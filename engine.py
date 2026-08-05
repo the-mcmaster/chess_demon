@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 """
 engine.py
 
@@ -22,12 +24,14 @@ def _uci_print(line: str) -> None:
     print(line, flush=True)
 
 
-def resolve_checkpoint(arg: str | None) -> tuple[str, int]:
+def resolve_checkpoint(arg: str | None, force: int=None) -> tuple[str, int]:
     """
     Return (path, epoch) for the weights to load.
 
     arg may be an epoch int, a path to a .pth file, or None (highest modelN.pth).
     """
+    if force is not None and os.path.exists(f"model{force}.pth"):
+        return f"model{force}.pth", force
     if arg is not None:
         if arg.endswith(".pth") or os.path.isfile(arg):
             path = arg
@@ -66,14 +70,7 @@ def choose_move(
     board: chess.Board,
     model: ChessTransformer,
     device: str,
-) -> tuple[chess.Move | None, float]:
-    """
-    Run the network on the side-to-move position.
-    Returns (best_move_or_None, value in [-1, 1] for the mover).
-    """
-    if board.is_game_over(claim_draw=True) or not any(board.legal_moves):
-        return None, 0.0
-
+) -> tuple[chess.Move, float]:
     x = board_to_tensor(board).unsqueeze(0).to(device)
     with torch.no_grad():
         policy_logits, value = model(x)
@@ -117,10 +114,7 @@ def handle_go(board: chess.Board, model: ChessTransformer, device: str) -> None:
     # value is mover-relative in [-1, 1]; surface as centipawns for GUIs
     cp = int(round(value * 1000))
     _uci_print(f"info score cp {cp} depth 1")
-    if move is None:
-        _uci_print("bestmove 0000")
-    else:
-        _uci_print(f"bestmove {move.uci()}")
+    _uci_print(f"bestmove {move.uci()}")
 
 
 def uci_loop(model: ChessTransformer, device: str) -> None:
@@ -135,7 +129,7 @@ def uci_loop(model: ChessTransformer, device: str) -> None:
         cmd = tokens[0]
 
         if cmd == "uci":
-            _uci_print(f"id name {ENGINE_NAME}")
+            _uci_print(f"id name {ENGINE_NAME}_Epoch{model.epoch}")
             _uci_print(f"id author {ENGINE_AUTHOR}")
             _uci_print("uciok")
 
@@ -169,11 +163,12 @@ def uci_loop(model: ChessTransformer, device: str) -> None:
 
 def main() -> None:
     arg = sys.argv[1] if len(sys.argv) >= 2 else None
+    # arg=None → highest model{N}.pth in cwd (latest / best checkpoint)
     path, epoch = resolve_checkpoint(arg)
     device = "cuda" if torch.cuda.is_available() else "cpu"
     model = load_model(path, epoch, device)
+    model.epoch = epoch
     uci_loop(model, device)
-
 
 if __name__ == "__main__":
     main()
